@@ -1,0 +1,148 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-09-11 16:30-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: front/config.form.php:87
+msgid "Configuration saved successfully"
+msgstr ""
+
+#: front/config.form.php:93
+msgid "Theres been some kind of error"
+msgstr ""
+
+#: front/dashboards.php:38
+msgid "Grafana collections"
+msgstr ""
+
+#: front/dashboards.php:48
+msgid "Reports and dashboards specifications"
+msgstr ""
+
+#: front/dashboards.php:66
+msgid "Listing:"
+msgstr ""
+
+#: front/dashboards.php:70
+msgid "Unable to access dashboards data. Please check plugin configuration."
+msgstr ""
+
+#: front/profileright.form.php:53 front/profileright.form.php:77
+msgid "Invalid request."
+msgstr ""
+
+#: front/selfservice.php:43 src/Config.php:56 src/Profileright.php:61
+msgid "Grafana"
+msgstr ""
+
+#: src/APIClient.php:70
+msgid "API: login"
+msgstr ""
+
+#: src/APIClient.php:184
+msgid "No auto-generated GLPI database found"
+msgstr ""
+
+#: src/APIClient.php:274
+msgid "Type"
+msgstr ""
+
+#: src/APIClient.php:278
+msgid "Incident"
+msgstr ""
+
+#: src/APIClient.php:279
+msgid "Request"
+msgstr ""
+
+#: src/APIClient.php:296
+msgid "Status"
+msgstr ""
+
+#: src/APIClient.php:550
+msgid ""
+"Query to grafana failed because operation timed out. Maybe you should "
+"increase the timeout value in plugin configuration"
+msgstr ""
+
+#: src/Config.php:112
+msgid "Grafana plugin configuration"
+msgstr ""
+
+#: src/Config.php:121
+msgid "Grafana URL"
+msgstr ""
+
+#: src/Config.php:131
+msgid "Grafana Username"
+msgstr ""
+
+#: src/Config.php:141
+msgid "Grafana Password"
+msgstr ""
+
+#: src/Config.php:151
+msgid "JWKS url"
+msgstr ""
+
+#: src/Config.php:160
+msgid "Grafana light mode theme"
+msgstr ""
+
+#: src/Config.php:169
+msgid "Language test"
+msgstr ""
+
+#: src/Config.php:171 src/Config.php:302
+msgid "Copy"
+msgstr ""
+
+#: src/Config.php:172
+msgid "Copied!"
+msgstr ""
+
+#: src/Config.php:188
+msgid "API status"
+msgstr ""
+
+#: src/Config.php:207
+msgid "Last Error"
+msgstr ""
+
+#: src/Config.php:220
+msgid "Action(s)"
+msgstr ""
+
+#: src/Config.php:226
+msgid "Show reports and dashboards specifications"
+msgstr ""
+
+#: src/Dashboard.php:63
+msgid "Grafana dashboard"
+msgstr ""
+
+#: src/Profileright.php:114
+msgid "Rights management"
+msgstr ""
+
+#: src/Profileright.php:123
+msgid "Allow access to all"
+msgstr ""
+
+#: src/Profileright.php:128
+msgid "Disallow access to all"
+msgstr ""

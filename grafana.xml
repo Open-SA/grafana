@@ -1,0 +1,66 @@
+<root>
+   <name>Grafana</name>
+   <key>grafana</key>
+   <state>stable</state>
+   <logo>https://raw.githubusercontent.com/opensa-sa/grafana/master/log.png</logo>
+   <description>
+      <short>
+         <en>This plugin is a modified version of the GLPI metabase plugin that allows you to embed Grafana dashboards directly into GLPI.</en>
+         <es>Este plugin es una versión modificada del plugin de Metabase para GLPI que permite incrustar paneles de Grafana directamente en GLPI.</es>
+      </short>
+      <long>
+         <en>
+This plugin lets you embed Grafana dashboards directly into your GLPI environment.
+Inspired by the Metabase plugin for GLPI, it leverages the Grafana API to import and display your visualizations within the GLPI interface.
+With this add-on, you can get a unified view of your monitoring and inventory data without having to switch between different applications.
+It simplifies data management and analysis, making it a valuable tool for any IT administrator.
+         </en>
+         <es>
+Este plugin te permite incrustar tableros de Grafana directamente en tu entorno GLPI.
+Está inspirado en el plugin de Metabase para GLPI y aprovecha la API de Grafana para importar y mostrar tus visualizaciones dentro de la interfaz de GLPI.
+Con este complemento, puedes tener una vista unificada de tus datos de monitoreo e inventario sin necesidad de alternar entre diferentes aplicaciones.
+Simplifica la gestión y el análisis de datos, lo que lo convierte en una herramienta valiosa para cualquier administrador de TI.
+         </es>
+      </long>
+   </description>
+   <homepage>https://github.com/Open-SA/grafana/</homepage>
+   <download>https://github.com/Open-SA/grafana/releases</download>
+   <issues>https://github.com/Open-SA/grafana/issues</issues>
+   <readme>https://git.opensa.com.ar/opensa/glpi-plugins/grafana/-/blob/main/README.md</readme>
+   <authors>
+      <author>Open SA</author>
+   </authors>
+   <versions>
+      <version>
+         <num>1.0.0</num>
+         <compatibility>~10.0.18</compatibility>
+         <download_url>https://github.com/Open-SA/grafana/releases/download/1.0.0/glpi-grafana-1.0.0.tar.bz2</download_url>
+      </version>
+   </versions>
+   <langs>
+      <lang>en_US</lang>
+      <lang>es_AR</lang>
+  </langs>
+   <license>GPLv2</license>
+   <tags>
+      <en>
+         <tag>Reporting</tag>
+         <tag>Data-vizualisation</tag>
+         <tag>Business-intelligence</tag>
+         <tag>Dashboard</tag>
+         <tag>Statistics</tag>
+         <tag>Central</tag>
+      </en>
+      <es>
+         <tag>Reportes</tag>
+         <tag>Visualidacion-de-Datos</tag>
+         <tag>Inteligencia-de-Negocios</tag>
+         <tag>Tableros</tag>
+         <tag>Estadisticas</tag>
+         <tag>Central</tag>
+      </es>
+   </tags>
+   <screenshots>
+      <screenshot>https://raw.githubusercontent.com/Open-SA/grafana/master/screenshot.png</screenshot>
+   </screenshots>
+</root>

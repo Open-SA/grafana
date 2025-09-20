@@ -1,0 +1,161 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+# Translators:
+# Emiliano Cagliari <thelordbat@gmail.com>, 2018
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-09-11 16:30-0300\n"
+"PO-Revision-Date: 2018-08-17 13:43+0000\n"
+"Last-Translator: Emiliano Cagliari <thelordbat@gmail.com>, 2018\n"
+"Language-Team: Spanish (Argentina) (https://app.transifex.com/teclib/"
+"teams/28042/es_AR/)\n"
+"Language: es_AR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
+"1 : 2;\n"
+
+#: front/config.form.php:87
+msgid "Configuration saved successfully"
+msgstr ""
+
+#: front/config.form.php:93
+msgid "Theres been some kind of error"
+msgstr ""
+
+#: front/dashboards.php:38
+msgid "Grafana collections"
+msgstr "Colecciones de Grafana"
+
+#: front/dashboards.php:48
+msgid "Reports and dashboards specifications"
+msgstr "Especificaciones de reportes y tableros"
+
+#: front/dashboards.php:66
+msgid "Listing:"
+msgstr "Listado:"
+
+#: front/dashboards.php:70
+#, fuzzy
+msgid "Unable to access dashboards data. Please check plugin configuration."
+msgstr ""
+"No fue posible acceder a la data de Grafana. Por favor revisar la "
+"configuración del plugin"
+
+#: front/profileright.form.php:53 front/profileright.form.php:77
+msgid "Invalid request."
+msgstr "Solicitud No Valida"
+
+#: front/selfservice.php:43 src/Config.php:56 src/Profileright.php:61
+msgid "Grafana"
+msgstr "Grafana"
+
+#: src/APIClient.php:70
+msgid "API: login"
+msgstr "API: inicio de sesión"
+
+#: src/APIClient.php:184
+msgid "No auto-generated GLPI database found"
+msgstr "No se encontró una base de datos GLPI autogenerada"
+
+#: src/APIClient.php:274
+msgid "Type"
+msgstr ""
+
+#: src/APIClient.php:278
+msgid "Incident"
+msgstr ""
+
+#: src/APIClient.php:279
+msgid "Request"
+msgstr ""
+
+#: src/APIClient.php:296
+#, fuzzy
+msgid "Status"
+msgstr "Estado de API"
+
+#: src/APIClient.php:550
+msgid ""
+"Query to grafana failed because operation timed out. Maybe you should "
+"increase the timeout value in plugin configuration"
+msgstr ""
+"La consulta a grafana falló debido a que se agotó el tiempo de espera de la "
+"operación. Tal vez debería aumentar el valor de tiempo de espera en la "
+"configuración del complemento"
+
+#: src/Config.php:112
+msgid "Grafana plugin configuration"
+msgstr "Configuración del plugin de Grafana"
+
+#: src/Config.php:121
+msgid "Grafana URL"
+msgstr "URL de Grafana"
+
+#: src/Config.php:131
+msgid "Grafana Username"
+msgstr "Nombre de usuario de Grafana"
+
+#: src/Config.php:141
+msgid "Grafana Password"
+msgstr "Contraseña de Grafana"
+
+#: src/Config.php:151
+msgid "JWKS url"
+msgstr ""
+
+#: src/Config.php:160
+msgid "Grafana light mode theme"
+msgstr "Tema claro de Grafana"
+
+#: src/Config.php:169
+msgid "Language test"
+msgstr "Si aparecés estando en inglés sos un hijo de puta"
+
+#: src/Config.php:171 src/Config.php:302
+msgid "Copy"
+msgstr "Copiar"
+
+#: src/Config.php:172
+msgid "Copied!"
+msgstr "Copiado!"
+
+#: src/Config.php:188
+msgid "API status"
+msgstr "Estado de API"
+
+#: src/Config.php:207
+msgid "Last Error"
+msgstr "Ultimo Error"
+
+#: src/Config.php:220
+msgid "Action(s)"
+msgstr "Accion(es)"
+
+#: src/Config.php:226
+msgid "Show reports and dashboards specifications"
+msgstr "Mostrar reportes y tableros"
+
+#: src/Dashboard.php:63
+msgid "Grafana dashboard"
+msgstr "Panel Grafana"
+
+#: src/Profileright.php:114
+msgid "Rights management"
+msgstr "Gestión de Permisos"
+
+#: src/Profileright.php:123
+msgid "Allow access to all"
+msgstr "Permitir acceso a todos"
+
+#: src/Profileright.php:128
+msgid "Disallow access to all"
+msgstr "No permitir el acceso a todos"

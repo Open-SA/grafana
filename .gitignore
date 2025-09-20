@@ -1,0 +1,4 @@
+dist/
+.gh_token
+*.min.*
+vendor/*

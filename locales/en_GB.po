@@ -1,0 +1,150 @@
+# English translations for glpi package.
+# Copyright (C) 2025 THE glpi'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the glpi package.
+# val <francovalfre999@gmail.com>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: glpi 19\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-09-11 16:30-0300\n"
+"PO-Revision-Date: 2025-09-11 16:42-0300\n"
+"Last-Translator: val <francovalfre999@gmail.com>\n"
+"Language-Team: English (British) <(nothing)>\n"
+"Language: en_GB\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ASCII\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: front/config.form.php:87
+msgid "Configuration saved successfully"
+msgstr "Configuration saved successfully"
+
+#: front/config.form.php:93
+msgid "Theres been some kind of error"
+msgstr "Theres been some kind of error"
+
+#: front/dashboards.php:38
+msgid "Grafana collections"
+msgstr "Grafana collections"
+
+#: front/dashboards.php:48
+msgid "Reports and dashboards specifications"
+msgstr "Reports and dashboards specifications"
+
+#: front/dashboards.php:66
+msgid "Listing:"
+msgstr "Listing:"
+
+#: front/dashboards.php:70
+msgid "Unable to access dashboards data. Please check plugin configuration."
+msgstr "Unable to access dashboards data. Please check plugin configuration."
+
+#: front/profileright.form.php:53 front/profileright.form.php:77
+msgid "Invalid request."
+msgstr "Invalid request."
+
+#: front/selfservice.php:43 src/Config.php:56 src/Profileright.php:61
+msgid "Grafana"
+msgstr "Grafana"
+
+#: src/APIClient.php:70
+msgid "API: login"
+msgstr "API: login"
+
+#: src/APIClient.php:184
+msgid "No auto-generated GLPI database found"
+msgstr "No auto-generated GLPI database found"
+
+#: src/APIClient.php:274
+msgid "Type"
+msgstr "Type"
+
+#: src/APIClient.php:278
+msgid "Incident"
+msgstr "Incident"
+
+#: src/APIClient.php:279
+msgid "Request"
+msgstr "Request"
+
+#: src/APIClient.php:296
+msgid "Status"
+msgstr "Status"
+
+#: src/APIClient.php:550
+msgid ""
+"Query to grafana failed because operation timed out. Maybe you should "
+"increase the timeout value in plugin configuration"
+msgstr ""
+"Query to grafana failed because operation timed out. Maybe you should "
+"increase the timeout value in plugin configuration"
+
+#: src/Config.php:112
+msgid "Grafana plugin configuration"
+msgstr "Grafana plugin configuration"
+
+#: src/Config.php:121
+msgid "Grafana URL"
+msgstr "Grafana URL"
+
+#: src/Config.php:131
+msgid "Grafana Username"
+msgstr "Grafana Username"
+
+#: src/Config.php:141
+msgid "Grafana Password"
+msgstr "Grafana Password"
+
+#: src/Config.php:151
+msgid "JWKS url"
+msgstr "JWKS url"
+
+#: src/Config.php:160
+msgid "Grafana light mode theme"
+msgstr "Grafana light mode theme"
+
+#: src/Config.php:169
+msgid "Language test"
+msgstr "Language test"
+
+#: src/Config.php:171 src/Config.php:302
+msgid "Copy"
+msgstr "Copy"
+
+#: src/Config.php:172
+msgid "Copied!"
+msgstr "Copied!"
+
+#: src/Config.php:188
+msgid "API status"
+msgstr "API status"
+
+#: src/Config.php:207
+msgid "Last Error"
+msgstr "Last Error"
+
+#: src/Config.php:220
+msgid "Action(s)"
+msgstr "Action(s)"
+
+#: src/Config.php:226
+msgid "Show reports and dashboards specifications"
+msgstr "Show reports and dashboards specifications"
+
+#: src/Dashboard.php:63
+msgid "Grafana dashboard"
+msgstr "Grafana dashboard"
+
+#: src/Profileright.php:114
+msgid "Rights management"
+msgstr "Rights management"
+
+#: src/Profileright.php:123
+msgid "Allow access to all"
+msgstr "Allow access to all"
+
+#: src/Profileright.php:128
+msgid "Disallow access to all"
+msgstr "Disallow access to all"
