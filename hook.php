@@ -114,8 +114,8 @@ function plugin_grafana_install()
 function plugin_grafana_uninstall()
 {
     global $DB;
-    // $config = new GlpiConfig();
-    // $config->deleteByCriteria(['context' => 'plugin:grafana']);
+    $config = new GlpiConfig();
+    $config->deleteByCriteria(['context' => 'plugin:grafana']);
 
     $DB->query('DROP TABLE IF EXISTS `' . Profileright::getTable() . '`');
 
