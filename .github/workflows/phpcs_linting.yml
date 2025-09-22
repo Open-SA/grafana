@@ -1,0 +1,19 @@
+name: PHP Composer
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+
+  lint:
+    name: Corriendo phpcs
+    runs-on: ubuntu-latest
+    container: jakzal/phpqa:latest
+    steps:
+      - name: 1. Descargar código
+        uses: actions/checkout@v4
+
+      - name: 2. PHPCS
+        run: phpcs --standard=PSR12 --extensions=php --ignore=vendor/* --report=full --warning-severity=0 .

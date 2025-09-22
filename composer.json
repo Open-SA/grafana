@@ -1,5 +1,8 @@
 {
     "require": {
         "lcobucci/jwt": "^5.4"
+    },
+    "require-dev": {
+        "glpi-project/tools": "^0.8.1"
     }
 }
