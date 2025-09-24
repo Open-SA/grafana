@@ -3,6 +3,7 @@
         "lcobucci/jwt": "^5.4"
     },
     "require-dev": {
-        "glpi-project/tools": "^0.8.1"
+        "glpi-project/tools": "^0.8.1",
+        "glpi-project/phpstan-glpi": "^1.1"
     }
 }
