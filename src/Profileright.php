@@ -43,6 +43,7 @@ use Session;
 use Plugin;
 use GlpiPlugin\Grafana\APIClient;
 use Html;
+use DBmysql;
 
 class Profileright extends Profile
 {
@@ -179,7 +180,7 @@ class Profileright extends Profile
      */
     public static function canProfileViewDashboards($profileId)
     {
-        /** @var DBmysql $DB */
+        /** @var \DBmysql $DB */
         global $DB;
 
         $iterator = $DB->request(
