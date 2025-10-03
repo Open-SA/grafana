@@ -69,8 +69,8 @@ function plugin_init_grafana()
         return;
     }
 
-    $PLUGIN_HOOKS['add_css']['grafana'] = 'grafana.css';
-    $PLUGIN_HOOKS['add_javascript']['grafana'] = 'grafana.js';
+    $PLUGIN_HOOKS['add_css']['grafana'] = 'css/grafana.css';
+    $PLUGIN_HOOKS['add_javascript']['grafana'] = 'js/grafana.js';
 
     // config page
     Plugin::registerClass(Config::class, ['addtabon' => 'Config']);
