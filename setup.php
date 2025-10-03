@@ -60,8 +60,8 @@ if (!defined('PLUGINGRAFANA_DIR')) {
  */
 function plugin_init_grafana()
 {
-    /** @var array $PLUGIN_HOOKS */
-    global $PLUGIN_HOOKS;
+    /** @var array $PLUGIN_HOOKS , @var array $CFG_GLPI*/
+    global $PLUGIN_HOOKS, $CFG_GLPI;
 
     $PLUGIN_HOOKS['csrf_compliant']['grafana'] = true;
     // don't load hooks if plugin not enabled (or glpi not logged)
@@ -69,8 +69,13 @@ function plugin_init_grafana()
         return;
     }
 
-    $PLUGIN_HOOKS['add_css']['grafana'] = 'css/grafana.css';
-    $PLUGIN_HOOKS['add_javascript']['grafana'] = 'js/grafana.js';
+    if ($CFG_GLPI['version'] >= '11.0.0') {
+        $PLUGIN_HOOKS['add_css']['grafana'] = 'css/grafana.css';
+        $PLUGIN_HOOKS['add_javascript']['grafana'] = 'js/grafana.js';
+    } else {
+        $PLUGIN_HOOKS['add_css']['grafana'] = 'public/css/grafana.css';
+        $PLUGIN_HOOKS['add_javascript']['grafana'] = 'public/js/grafana.js';
+    }
 
     // config page
     Plugin::registerClass(Config::class, ['addtabon' => 'Config']);

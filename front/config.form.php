@@ -49,7 +49,7 @@ if (isset($_REQUEST["empty_button"])) {
     Html::back();
 } else {
     // This is basically the same block of code in /front/config.form.php with an API call to update the dark/light mode
-
+    global $CFG_GLPI;
     $config = new Config();
     $_POST['id'] = Config::getConfigIDForContext('core');
     if (!empty($_POST["update_auth"])) {
@@ -59,13 +59,16 @@ if (isset($_REQUEST["empty_button"])) {
     if (!empty($_POST["update"])) {
         $context = array_key_exists('config_context', $_POST) ? $_POST['config_context'] : 'core';
 
-        // $glpikey = new GLPIKey();
-        // foreach (array_keys($_POST) as $field) {
-        //     if ($glpikey->isConfigSecured($context, $field)) {
-        //         // Field must not be altered, it will be encrypted and never displayed, so sanitize is not necessary.
-        //         $_POST[$field] = $_UPOST[$field];
-        //     }
-        // }
+        if ($CFG_GLPI['version'] < '11.0.0') {
+            $glpikey = new GLPIKey();
+            foreach (array_keys($_POST) as $field) {
+                if ($glpikey->isConfigSecured($context, $field)) {
+                    // Field must not be altered, it will be encrypted and never displayed, so sanitize is not necessary.
+                    $_POST[$field] = $_UPOST[$field];
+                }
+            }
+        }
+
 
         $config->update($_POST);
 
