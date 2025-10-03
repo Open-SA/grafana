@@ -108,6 +108,9 @@ class Dashboard extends CommonDBTM
      */
     public static function showForCentral(Central $item, $withtemplate = 0, $is_helpdesk = false)
     {
+
+        global $CFG_GLPI;
+
         $apiclient = new APIClient();
 
         $currentUuid = isset($_GET['uuid']) ? $_GET['uuid'] : null;
