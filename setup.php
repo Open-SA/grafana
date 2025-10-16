@@ -38,6 +38,8 @@ use Glpi\Plugin\Hooks;
 use GlpiPlugin\Grafana\Config;
 use GlpiPlugin\Grafana\Dashboard;
 use GlpiPlugin\Grafana\Profileright;
+use Glpi\Http\Firewall;
+use Glpi\Http\SessionManager;
 
 require_once __DIR__ . '/src/Config.php';
 
@@ -62,6 +64,11 @@ function plugin_init_grafana()
 {
     /** @var array $PLUGIN_HOOKS , @var array $CFG_GLPI*/
     global $PLUGIN_HOOKS, $CFG_GLPI;
+    // Firewall
+    Firewall::addPluginStrategyForLegacyScripts('grafana', '#^/front/jwks.php$#', Firewall::STRATEGY_NO_CHECK);
+    
+    // Session handling for stateless resources
+    SessionManager::registerPluginStatelessPath('grafana', '#^/front/jwks.php/#');
 
     $PLUGIN_HOOKS['csrf_compliant']['grafana'] = true;
     // don't load hooks if plugin not enabled (or glpi not logged)
@@ -89,6 +96,9 @@ function plugin_init_grafana()
 
     // Encryption
     $PLUGIN_HOOKS['secured_configs']['grafana'] = ['password'];
+
+
+
 }
 
 
