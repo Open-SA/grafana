@@ -66,7 +66,7 @@ function plugin_init_grafana()
     global $PLUGIN_HOOKS, $CFG_GLPI;
     // Firewall
     Firewall::addPluginStrategyForLegacyScripts('grafana', '#^/front/jwks.php$#', Firewall::STRATEGY_NO_CHECK);
-    
+
     // Session handling for stateless resources
     SessionManager::registerPluginStatelessPath('grafana', '#^/front/jwks.php/#');
 
@@ -96,9 +96,6 @@ function plugin_init_grafana()
 
     // Encryption
     $PLUGIN_HOOKS['secured_configs']['grafana'] = ['password'];
-
-
-
 }
 
 
