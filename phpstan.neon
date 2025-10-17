@@ -1,0 +1,18 @@
+includes:
+    - vendor/glpi-project/phpstan-glpi/extension.neon
+parameters:
+  level: 5
+  paths:
+    - src
+    - front
+    - ajax
+    - public
+    - hook.php
+    - setup.php
+  scanDirectories:
+    - ../../inc
+    - ../../src
+  bootstrapFiles:
+    - ../../inc/based_config.php
+  stubFiles:
+    - ../../stubs/glpi_constants.php

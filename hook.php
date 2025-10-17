@@ -61,7 +61,7 @@ function plugin_grafana_install()
                      PRIMARY KEY (`id`),
                      UNIQUE `profiles_id_dashboard_uuid` (`profiles_id`, `dashboard_uuid`)
                   ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=DYNAMIC;";
-        $DB->query($query) or die($DB->error());
+        $DB->doQuery($query) or die($DB->error());
     }
 
     $migration->executeMigration();
@@ -114,10 +114,10 @@ function plugin_grafana_install()
 function plugin_grafana_uninstall()
 {
     global $DB;
-    // $config = new GlpiConfig();
-    // $config->deleteByCriteria(['context' => 'plugin:grafana']);
+    $config = new GlpiConfig();
+    $config->deleteByCriteria(['context' => 'plugin:grafana']);
 
-    $DB->query('DROP TABLE IF EXISTS `' . Profileright::getTable() . '`');
+    $DB->doQuery('DROP TABLE IF EXISTS `' . Profileright::getTable() . '`');
 
 
     return true;

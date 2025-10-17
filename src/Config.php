@@ -145,7 +145,7 @@ class Config extends CommonDBTM
             'inputtype' => 'paragraph',
             'label'     => __('JWKS url', 'grafana'),
             'attrs'    => [
-                'value' => $CFG_GLPI['url_base'] . "/plugins/grafana/public/jwks.php",
+                'value' => $CFG_GLPI['url_base'] . "/plugins/grafana/front/jwks.php",
                 'id' => 'grafana_jwks_url'
             ],
         ]);

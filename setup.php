@@ -38,15 +38,17 @@ use Glpi\Plugin\Hooks;
 use GlpiPlugin\Grafana\Config;
 use GlpiPlugin\Grafana\Dashboard;
 use GlpiPlugin\Grafana\Profileright;
+use Glpi\Http\Firewall;
+use Glpi\Http\SessionManager;
 
 require_once __DIR__ . '/src/Config.php';
 
-define('PLUGIN_GRAFANA_VERSION', '1.0.0');
+define('PLUGIN_GRAFANA_VERSION', '1.1.0');
 
 // Minimal GLPI version, inclusive
 define('PLUGIN_GRAFANA_MIN_GLPI', '10.0.0');
 // Maximum GLPI version, exclusive
-define('PLUGIN_GRAFANA_MAX_GLPI', '10.0.99');
+define('PLUGIN_GRAFANA_MAX_GLPI', '11.0.99');
 
 if (!defined('PLUGINGRAFANA_DIR')) {
     define('PLUGINGRAFANA_DIR', __DIR__);
@@ -60,8 +62,13 @@ if (!defined('PLUGINGRAFANA_DIR')) {
  */
 function plugin_init_grafana()
 {
-    /** @var array $PLUGIN_HOOKS */
-    global $PLUGIN_HOOKS;
+    /** @var array $PLUGIN_HOOKS , @var array $CFG_GLPI*/
+    global $PLUGIN_HOOKS, $CFG_GLPI;
+    // Firewall
+    Firewall::addPluginStrategyForLegacyScripts('grafana', '#^/front/jwks.php$#', Firewall::STRATEGY_NO_CHECK);
+
+    // Session handling for stateless resources
+    SessionManager::registerPluginStatelessPath('grafana', '#^/front/jwks.php/#');
 
     $PLUGIN_HOOKS['csrf_compliant']['grafana'] = true;
     // don't load hooks if plugin not enabled (or glpi not logged)
@@ -69,8 +76,13 @@ function plugin_init_grafana()
         return;
     }
 
-    $PLUGIN_HOOKS['add_css']['grafana'] = 'grafana.css';
-    $PLUGIN_HOOKS['add_javascript']['grafana'] = 'grafana.js';
+    if ($CFG_GLPI['version'] >= '11.0.0') {
+        $PLUGIN_HOOKS['add_css']['grafana'] = 'css/grafana.css';
+        $PLUGIN_HOOKS['add_javascript']['grafana'] = 'js/grafana.js';
+    } else {
+        $PLUGIN_HOOKS['add_css']['grafana'] = 'public/css/grafana.css';
+        $PLUGIN_HOOKS['add_javascript']['grafana'] = 'public/js/grafana.js';
+    }
 
     // config page
     Plugin::registerClass(Config::class, ['addtabon' => 'Config']);
