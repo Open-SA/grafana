@@ -1,3 +1,12 @@
+# Latest releases
+
+| ------        | GLPI 11 | GLPI 10 |
+|-------------|----------|----------|
+| **Download**| [1.1.0](https://github.com/Open-SA/grafana/releases/tag/1.1.0)   | [1.0.0](https://github.com/Open-SA/grafana/releases/tag/1.0.0)   |
+| **Branch** | main    | support/glpi10  |
+| **Status** | Latest  | Supported |
+
+
 ## English version 
 
 # Grafana integration with GLPI
