@@ -30,6 +30,20 @@
 
 include('../../../inc/includes.php');
 
+use GlpiPlugin\Grafana\Profileright;
+
+Session::checkLoginUser();
+
+if (!Profileright::canProfileViewDashboards($_SESSION['glpiactiveprofile']['id'])) {
+    http_response_code(403);
+    echo json_encode([
+        'error' => 'You don\'t have permission to view dashboards',
+    ]);
+    exit;
+}
+
+header('Content-Type: application/json');
+
 use Lcobucci\JWT\Configuration;
 
 use Lcobucci\JWT\Signer\Key\InMemory;
