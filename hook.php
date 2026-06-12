@@ -61,7 +61,7 @@ function plugin_grafana_install()
                      PRIMARY KEY (`id`),
                      UNIQUE `profiles_id_dashboard_uuid` (`profiles_id`, `dashboard_uuid`)
                   ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=DYNAMIC;";
-        $DB->doQuery($query) or die($DB->error());
+        $DB->doQuery($query);
     }
 
     $migration->executeMigration();

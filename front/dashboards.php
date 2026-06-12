@@ -171,7 +171,7 @@ function printTree($tree)
 
 function printFolder($folder)
 {
-    echo '<li><label>' . $folder['title'] . '</label>';
+    echo '<li><label>' . htmlescape($folder['title']) . '</label>';
     echo "<ul class='extract_list'>";
 
 
@@ -190,7 +190,7 @@ function printDashboard($dashboard)
     echo "<li><a href='#'
                 class='extract'
                 data-uid='" . $dashboard['uid'] . "' data-type='dashboard'>" .
-        $dashboard['title'] .
+        htmlescape($dashboard['title']) .
         '</a></li>';
 }
 

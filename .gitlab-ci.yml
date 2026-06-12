@@ -6,8 +6,23 @@ stages:
 
 variables:
   PACKAGE_VERSION: $CI_COMMIT_TAG
-  ZIP_NAME: "glpi-grafana-${CI_COMMIT_TAG}.zip"
+  ZIP_NAME: "glpi-${CI_PROJECT_NAME}-${CI_COMMIT_TAG}.zip"
   PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/mi-plugin/${PACKAGE_VERSION}"
+
+composer_audit:
+  stage: lint
+  image: composer:latest
+  tags:
+    - opensa
+    - docker
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == 'main'
+  script:
+    - echo "Validando estructura del composer.json..."
+    - composer validate --no-check-all
+    - echo "Escaneando vulnerabilidades en librerías"
 
 phpcs:
   stage: lint
@@ -21,7 +36,7 @@ phpcs:
     - if: $CI_COMMIT_BRANCH == 'main'
   script:
     - echo "Verificando PSR-12 en todos los archivos PHP, ignorando vendor..."
-    - phpcs --standard=PSR12 --extensions=php --ignore=vendor/* --report=full --warning-severity=0 .
+    - phpcs --standard=PSR12 --extensions=php --ignore=vendor/*,stubs/* --report=full --warning-severity=0 .
 
 build_job:
   stage: build
@@ -54,7 +69,7 @@ package_job:
     - echo "Instalando curl y zip..."
     - apk --no-cache add curl zip
 
-    - export DEST_FOLDER="grafana"
+    - export DEST_FOLDER="${CI_PROJECT_NAME}"
     - |
       echo "Creando el directorio de destino: ${DEST_FOLDER}/"
     - mkdir "${DEST_FOLDER}"
@@ -62,9 +77,15 @@ package_job:
     - |
       echo "Moviendo archivos al directorio de destino..."
       for item in $(ls -A); do
-        if [ "$item" != "${DEST_FOLDER}" ]; then
-          mv "$item" "${DEST_FOLDER}/"
-        fi
+        case "$item" in
+          "${DEST_FOLDER}"| ".git"| ".git-hooks"| ".gitlab-ci.yml"| ".github"| "tests"| ".gitignore"| ".php-cs-fixer.php"| "phpstan.neon"| "phpunit.xml")
+            echo "Ignorando ${item}..."
+            continue
+            ;;
+          *)
+            mv "$item" "${DEST_FOLDER}/"
+            ;;
+        esac
       done
     
     - echo "Empaquetando el directorio ${DEST_FOLDER}..."

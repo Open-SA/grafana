@@ -43,7 +43,7 @@ Html::header_nocache();
 Session::checkLoginUser();
 
 if (!isset($_REQUEST['uid']) || !isset($_REQUEST['type'])) {
-    exit;
+    return;
 }
 
 switch ($_REQUEST['type']) {
