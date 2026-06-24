@@ -113,7 +113,7 @@ class Dashboard extends CommonDBTM
 
         $apiclient = new APIClient();
 
-        $currentUuid = isset($_GET['uuid']) ? $_GET['uuid'] : null;
+        $requestedUuid = isset($_GET['uuid']) ? $_GET['uuid'] : null;
 
         $dashboards = $apiclient->getDashboards();
         if (is_array($dashboards)) {
@@ -134,9 +134,11 @@ class Dashboard extends CommonDBTM
             return;
         }
 
-        if (null === $currentUuid) {
-            $firstDashboard = current($dashboards);
-            $currentUuid    = $firstDashboard['id'];
+        $validIds = array_column($dashboards, 'id');
+        if ($requestedUuid !== null && in_array($requestedUuid, $validIds, true)) {
+            $currentUuid = $requestedUuid;
+        } else {
+            $currentUuid = current($dashboards)['id'];
         }
 
         Dropdown::showFromArray(
@@ -178,35 +180,78 @@ class Dashboard extends CommonDBTM
             $dashboardUrl = substr($dashboardUrl, strpos($dashboardUrl, '/d/'));
         }
         // The kiosk parameter is used to hide the Grafana header and footer so it only shows the dashboard
-        $fullUrl = $url . $dashboardUrl . '?kiosk&auth_token=' . $token->toString();
+        $baseIframeUrl = $url . $dashboardUrl . '?kiosk';
+        $fullUrl = $baseIframeUrl . '&auth_token=' . $token->toString();
 
-        echo "<iframe src='$fullUrl' id='grafana_iframe' allowtransparency></iframe>";
+        echo "<iframe src='" . htmlescape($fullUrl) . "' id='grafana_iframe' allowtransparency></iframe>";
 
         echo Html::scriptBlock("
-            setInterval(function() {
-                console.log('Refreshing Grafana iframe token');
+            (function() {
+                var baseIframeUrl = '" . jsescape($baseIframeUrl) . "';
+                var currentTokenExpiry = 0;
+                var pendingRefresh = false;
+                var refreshTimeout = null;
 
-                $.ajax({
-                    url: '" . $CFG_GLPI['url_base'] . "/plugins/grafana/ajax/refresh_token.php',
-                    dataType: 'json',
-                    success: function(data) {
-                        if (data.token) {
-                            var ifram = document.getElementById('grafana_iframe');
-                            var url_string = ifram.src;
-                            var index_auth = url_string.indexOf('auth_token=');
+                function getTokenExpiry(token) {
+                    try {
+                        var payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+                        return payload.exp * 1000;
+                    } catch (e) {
+                        return Date.now() + 55 * 60 * 1000;
+                    }
+                }
 
-                            if (index_auth !== -1) {
-                                var new_url = url_string.substring(0, index_auth) + 'auth_token=' + data.token;
+                function doRefresh() {
+                    $.ajax({
+                        url: '" . $CFG_GLPI['url_base'] . "/plugins/grafana/ajax/refresh_token.php',
+                        dataType: 'json',
+                        cache: false,
+                        success: function(data) {
+                            if (data.token) {
+                                var iframe = document.getElementById('grafana_iframe');
+                                if (iframe) {
+                                    iframe.src = baseIframeUrl + '&auth_token=' + data.token;
+                                }
+                                pendingRefresh = false;
+                                scheduleRefresh(data.token);
                             }
-                            ifram.src = new_url;
-                        } else {
-                            console.error('Error refreshing token');
+                        },
+                        error: function() {
+                            refreshTimeout = setTimeout(doRefresh, 30 * 1000);
                         }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error refreshing token:', error);
+                    });
+                }
+
+                function scheduleRefresh(token) {
+                    if (refreshTimeout) {
+                        clearTimeout(refreshTimeout);
+                    }
+                    currentTokenExpiry = getTokenExpiry(token);
+                    var delay = Math.max(30 * 1000, currentTokenExpiry - Date.now() - 2 * 60 * 1000);
+                    refreshTimeout = setTimeout(function() {
+                        if (document.visibilityState === 'hidden') {
+                            pendingRefresh = true;
+                        } else {
+                            doRefresh();
+                        }
+                    }, delay);
+                }
+
+                document.addEventListener('visibilitychange', function() {
+                    if (document.visibilityState === 'visible') {
+                        var tokenExpiredOrClose = Date.now() >= currentTokenExpiry - 2 * 60 * 1000;
+                        if (pendingRefresh || tokenExpiredOrClose) {
+                            if (refreshTimeout) {
+                                clearTimeout(refreshTimeout);
+                            }
+                            pendingRefresh = false;
+                            doRefresh();
+                        }
                     }
                 });
-            }, 55 * 60 * 1000);");
+
+                scheduleRefresh('" . $token->toString() . "');
+            })();
+        ");
     }
 }

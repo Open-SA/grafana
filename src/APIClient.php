@@ -372,13 +372,13 @@ class APIClient extends CommonGLPI
             return false;
         }
         */
-        return $this->httpQuery("search?type=dash-db&dashboardUIDs=" . $dashboard_uid);
+        return $this->httpQuery("search?type=dash-db&dashboardUIDs=" . urlencode($dashboard_uid));
     }
 
     public function getDashboards($folder_uid = '')
     {
         if ($folder_uid !== '') {
-            $data = $this->httpQuery('search?type=dash-db&folderUIDs=' . $folder_uid);
+            $data = $this->httpQuery('search?type=dash-db&folderUIDs=' . urlencode($folder_uid));
         } else {
             $data = $this->httpQuery('search?type=dash-db');
         }
@@ -452,7 +452,7 @@ class APIClient extends CommonGLPI
             'timeout'         => 5,
             'connect_timeout' => 2,
             'debug'           => false,
-            'verify'          => false,
+            'verify'          => true,
             'query'           => [], // url parameter
             'body'            => '', // raw data to send in body
             'json'            => [], // json data to send
