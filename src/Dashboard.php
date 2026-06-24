@@ -151,8 +151,18 @@ class Dashboard extends CommonDBTM
         );
 
         $config = Config::getConfig();
-        $private_key = file_get_contents(GLPI_PLUGIN_DOC_DIR . '/grafana/keys/private_key.pem');
-        $public_key = file_get_contents(GLPI_PLUGIN_DOC_DIR . '/grafana/keys/public_key.pem');
+        $private_key_path = GLPI_PLUGIN_DOC_DIR . '/grafana/keys/private_key.pem';
+        $public_key_path  = GLPI_PLUGIN_DOC_DIR . '/grafana/keys/public_key.pem';
+
+        if (!file_exists($private_key_path) || !file_exists($public_key_path)) {
+            echo '<div class="alert alert-warning">'
+                . __('Grafana plugin: RSA keys not found. Please reinstall the plugin.', 'grafana')
+                . '</div>';
+            return;
+        }
+
+        $private_key = file_get_contents($private_key_path);
+        $public_key  = file_get_contents($public_key_path);
 
 
         $signer_config = Configuration::forAsymmetricSigner(

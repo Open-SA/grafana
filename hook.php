@@ -80,14 +80,15 @@ function plugin_grafana_install()
 
     $keysDir = GLPI_PLUGIN_DOC_DIR . '/grafana/keys';
 
-    if (!is_dir($keysDir)) {
-        mkdir($keysDir, 0755, true);
+    if (!is_dir($keysDir) && !mkdir($keysDir, 0755, true)) {
+        $migration->displayWarning("Grafana plugin: could not create keys directory: $keysDir");
+        return false;
     }
 
     $private_key_path = $keysDir . '/private_key.pem';
     $public_key_path = $keysDir . '/public_key.pem';
 
-    if (file_exists($private_key_path) || file_exists($public_key_path)) {
+    if (file_exists($private_key_path) && file_exists($public_key_path)) {
         return true;
     }
 
@@ -96,12 +97,23 @@ function plugin_grafana_install()
         'private_key_type' => OPENSSL_KEYTYPE_RSA,
     ]);
 
+    if ($key_pair === false) {
+        $migration->displayWarning('Grafana plugin: could not generate RSA key pair. ' . openssl_error_string());
+        return false;
+    }
+
     openssl_pkey_export($key_pair, $private_key);
-    file_put_contents($private_key_path, $private_key);
+    if (file_put_contents($private_key_path, $private_key) === false) {
+        $migration->displayWarning("Grafana plugin: could not write private key to $private_key_path");
+        return false;
+    }
 
     $keyDetails = openssl_pkey_get_details($key_pair);
     $public_key = $keyDetails['key'];
-    file_put_contents($public_key_path, $public_key);
+    if (file_put_contents($public_key_path, $public_key) === false) {
+        $migration->displayWarning("Grafana plugin: could not write public key to $public_key_path");
+        return false;
+    }
 
     return true;
 }

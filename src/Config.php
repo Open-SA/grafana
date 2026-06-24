@@ -199,7 +199,7 @@ class Config extends CommonDBTM
             if (count($error)) {
                 echo "<h1>" . __("Last Error", 'grafana') . "</h1>";
                 if (isset($error['exception'])) {
-                    echo $error['exception'];
+                    echo htmlescape($error['exception']);
                 } else {
                     Html::printCleanArray($error);
                 }
