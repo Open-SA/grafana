@@ -37,6 +37,7 @@
 include('../../../inc/includes.php');
 
 use GlpiPlugin\Grafana\Config;
+use GlpiPlugin\Grafana\Profileright;
 
 header('Content-Type: text/html; charset=UTF-8');
 Html::header_nocache();
@@ -48,6 +49,10 @@ if (!isset($_REQUEST['uid']) || !isset($_REQUEST['type'])) {
 
 switch ($_REQUEST['type']) {
     case 'dashboard':
+        if (!Profileright::canProfileViewDashboard($_SESSION['glpiactiveprofile']['id'], $_REQUEST['uid'])) {
+            header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
+            return;
+        }
         Config::displayDashboardJson($_REQUEST['uid']);
         break;
 }

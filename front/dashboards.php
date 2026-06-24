@@ -189,7 +189,7 @@ function printDashboard($dashboard)
 {
     echo "<li><a href='#'
                 class='extract'
-                data-uid='" . $dashboard['uid'] . "' data-type='dashboard'>" .
+                data-uid='" . htmlescape($dashboard['uid']) . "' data-type='dashboard'>" .
         htmlescape($dashboard['title']) .
         '</a></li>';
 }
