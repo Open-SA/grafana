@@ -1,0 +1,66 @@
+#!/bin/sh
+
+echo "\n==================================================\n"
+
+# Get a list of staged PHP files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.php$')
+
+if [ -z "$STAGED_FILES" ]; then
+    echo "No PHP files staged, skipping PHP checks..."
+    echo "\n==================================================\n"
+    exit 0
+fi
+
+echo "Running PHPCS on staged PHP files...\n"
+
+# Run PHPCS on each staged file
+./vendor/bin/phpcs --standard=PSR12 --extensions=php --ignore=vendor/*,stubs/* --report=full --warning-severity=0 $STAGED_FILES
+
+RESULT=$?
+
+# If PHPCS exits non-zero, fail the commit
+if [ "$RESULT" -ne 0 ]; then
+
+    if [ "$RESULT" -eq 1 ]; then
+        echo "\nPHPCS failed."
+        echo "The errors are autofixable with './vendor/bin/phpcbf --standard=PSR12 --extensions=php --ignore=vendor/* --report=full --warning-severity=0 .'"
+        echo "Please run the command and try committing again.\n"
+        exit 1
+    fi
+
+    if [ "$RESULT" -eq 3 ]; then
+        echo "\nPHPCS failed."
+        echo "Some errors are autofixable with './vendor/bin/phpcbf --standard=PSR12 --extensions=php --ignore=vendor/* --report=full --warning-severity=0 .'"
+        echo "Please run the command, fix the rest manually and try commititing again.\n"
+        exit 1
+    fi
+
+    if [ "$RESULT" -eq 2 ]; then
+        echo "PHPCS failed. The errors are not autofixable. Please fix them and try committing again."
+        exit 1
+    fi
+
+fi
+
+echo "\nPHPCS passed correctly! :)"
+echo "\n==================================================\n"
+echo "Running PHPStan...\n"
+
+./vendor/bin/phpstan analyse
+
+STAN_RESULT=$?
+
+if [ "$STAN_RESULT" -eq 1 ]; then
+    echo "\nPHPStan found errors. Please fix them and try committing again.\n"
+    exit 1
+fi
+
+if [ "$STAN_RESULT" -gt 1 ]; then
+    echo "\nPHPStan encountered an internal error. Please check the output above.\n"
+    exit 1
+fi
+
+echo "PHPStan passed correctly! :)"
+echo "\n==================================================\n"
+
+exit 0

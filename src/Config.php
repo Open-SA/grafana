@@ -199,7 +199,7 @@ class Config extends CommonDBTM
             if (count($error)) {
                 echo "<h1>" . __("Last Error", 'grafana') . "</h1>";
                 if (isset($error['exception'])) {
-                    echo $error['exception'];
+                    echo htmlescape($error['exception']);
                 } else {
                     Html::printCleanArray($error);
                 }
@@ -392,13 +392,13 @@ class Config extends CommonDBTM
         echo Html::script("lib/prism/prism.js");
 
         echo "<pre><code class='language-json'>";
-        echo preg_replace(
+        echo htmlescape(preg_replace(
             "/(^|\G) {4}/m",
             "   ", // replace indentation from 4 to 3 spaces
             json_encode($array, JSON_PRETTY_PRINT
                 + JSON_UNESCAPED_UNICODE
                 + JSON_UNESCAPED_SLASHES)
-        );
+        ));
         echo "</code></pre>";
     }
 }

@@ -1,9 +1,43 @@
 {
+    "name": "glpi-project/grafana",
+    "description": "Plugin para integrar dashboards de Grafana en GLPI.",
+    "type": "glpi-plugin",
+    "license": "GPL-2.0-or-later",
     "require": {
+        "php": ">=8.2",
         "lcobucci/jwt": "^5.4"
     },
     "require-dev": {
-        "glpi-project/tools": "^0.8.1",
-        "glpi-project/phpstan-glpi": "^1.1"
+        "glpi-project/tools": "^0.8",
+        "squizlabs/php_codesniffer": "^4.0",
+        "phpstan/phpstan": "^2.0",
+        "glpi-project/phpstan-glpi": "^1.0"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "platform": {
+            "php": "8.2.0"
+        },
+        "sort-packages": true
+    },
+    "autoload": {
+        "psr-4": {
+            "GlpiPlugin\\Grafana\\": [
+                "src/",
+                "inc/"
+            ]
+        }
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "git config core.hooksPath .git-hooks",
+            "chmod +x .git-hooks/pre-commit",
+            "echo 'Git hooks configured \\n';"
+        ],
+        "post-update-cmd": [
+            "git config core.hooksPath .git-hooks",
+            "chmod +x .git-hooks/pre-commit",
+            "echo 'Git hooks configured \\n';"
+        ]
     }
 }

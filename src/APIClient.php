@@ -94,7 +94,7 @@ class APIClient extends CommonGLPI
         }
      }*/
 
-        return ($data !== false && count($data) > 0);
+        return (is_array($data) && count($data) > 0);
     }
 
     public function checkSession()
@@ -372,13 +372,13 @@ class APIClient extends CommonGLPI
             return false;
         }
         */
-        return $this->httpQuery("search?type=dash-db&dashboardUIDs=" . $dashboard_uid);
+        return $this->httpQuery("search?type=dash-db&dashboardUIDs=" . urlencode($dashboard_uid));
     }
 
     public function getDashboards($folder_uid = '')
     {
         if ($folder_uid !== '') {
-            $data = $this->httpQuery('search?type=dash-db&folderUIDs=' . $folder_uid);
+            $data = $this->httpQuery('search?type=dash-db&folderUIDs=' . urlencode($folder_uid));
         } else {
             $data = $this->httpQuery('search?type=dash-db');
         }
@@ -452,7 +452,7 @@ class APIClient extends CommonGLPI
             'timeout'         => 5,
             'connect_timeout' => 2,
             'debug'           => false,
-            'verify'          => false,
+            'verify'          => true,
             'query'           => [], // url parameter
             'body'            => '', // raw data to send in body
             'json'            => [], // json data to send
@@ -526,14 +526,27 @@ class APIClient extends CommonGLPI
         $headers   = $response->getHeaders();
 
         // check http errors
-        if (intval($http_code) > 400) {
-            // we have an error if http code is greater than 400
+        if (intval($http_code) >= 400) {
+            $this->last_error = [
+                'title'     => 'Grafana API error',
+                'exception' => 'HTTP ' . $http_code . ' — ' . $response->getReasonPhrase(),
+                'response'  => substr((string) $response->getBody(), 0, 500),
+            ];
             return false;
         }
 
-        // cast body as string, guzzle return strems
+        // cast body as string, guzzle return streams
         $json = (string) $response->getBody();
         $data = json_decode($json, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $this->last_error = [
+                'title'     => 'Grafana API error',
+                'exception' => 'Response is not valid JSON — possible proxy or authentication page intercepting the request',
+                'response'  => substr($json, 0, 500),
+            ];
+            return false;
+        }
 
         //append metadata
         if ($params['_with_metadata']) {
