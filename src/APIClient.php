@@ -46,8 +46,6 @@ use GLPIKey;
 use GlpiPlugin\Grafana\Config;
 use Session;
 use Toolbox;
-use DBConnection;
-use CommonITILObject;
 
 class APIClient extends CommonGLPI
 {
@@ -81,286 +79,14 @@ class APIClient extends CommonGLPI
      */
     public function connect()
     {
-        /* if (isset($_SESSION['grafana']['session_token'])) {
-            return true;
-        }*/
-
         // send connect with http query
         $data = $this->httpQuery('search', [], 'GET');
-
-        /*if (is_array($data)) {
-        if (isset($data['id'])) {
-           $_SESSION['grafana']['session_token'] = $data['id'];
-        }
-     }*/
 
         return (is_array($data) && count($data) > 0);
     }
 
-    public function checkSession()
-    {
-        // do a simple query
-        $this->getCurrentUser(true);
-
-        // check session token, if set, we still have a valid token
-        if (isset($_SESSION['grafana']['session_token'])) {
-            return true;
-        }
-
-        // so reconnect
-        $this->connect();
-
-        // check again session token, if set, we now have a valid token
-        if (isset($_SESSION['grafana']['session_token'])) {
-            return true;
-        }
-
-        return false;
-    }
-
-    public function getCurrentUser($skip_session_check = false)
-    {
-        if (
-            !$skip_session_check
-            && !$this->checkSession()
-        ) {
-            return false;
-        }
-
-        $data = $this->httpQuery('user/current');
-
-        return $data;
-    }
-
-    public function getUsers()
-    {
-        if (!$this->checkSession()) {
-            return false;
-        }
-
-        $data = $this->httpQuery('user');
-
-        return $data;
-    }
-
-    public function getDatabases()
-    {
-        if (!$this->checkSession()) {
-            return false;
-        }
-
-        $data = $this->httpQuery('database');
-
-        return $data;
-    }
-
-    public function getDatabase($db_id = 0)
-    {
-        if (!$this->checkSession()) {
-            return false;
-        }
-
-        $data = $this->httpQuery("database/$db_id");
-
-        return $data;
-    }
-
-    public function getGlpiDatabase()
-    {
-        // we already have stored the id of glpi database
-        if (($db_id = $this->api_config['glpi_db_id']) != 0) {
-            return $this->getDatabase($db_id);
-        }
-
-        if (($databases = $this->getDatabases()) === false) {
-            return false;
-        }
-
-        foreach ($databases['data'] as $database) {
-            if ($database['name'] == 'GLPI (plugin auto-generated)') {
-                return $database;
-            }
-        }
-
-        $this->last_error[] = __('No auto-generated GLPI database found', 'grafana');
-
-        return false;
-    }
-
-    public function createGlpiDatabase()
-    {
-        /** @var \DBmysql $DB */
-        global $DB;
-
-        if (($data = $this->getGlpiDatabase()) === false) {
-            // try to switch to slave db
-            DBConnection::switchToSlave();
-
-            // post conf for the glpi database
-            $data = $this->httpQuery('database', [
-                'timeout' => $this->api_config['timeout'],
-                'json'    => [
-                    'name'         => 'GLPI (plugin auto-generated)',
-                    'engine'       => 'mysql',
-                    'is_full_sync' => true,
-                    'details'      => [
-                        'host'        => $DB->dbhost,
-                        'port'        => 3306,
-                        'dbname'      => $DB->dbdefault,
-                        'user'        => $DB->dbuser,
-                        'password'    => $DB->dbpassword,
-                        'tunnel-port' => 22,
-                    ],
-                ],
-            ], 'POST');
-
-            // switch back to master
-            DBConnection::switchToMaster();
-        }
-
-        return $data;
-    }
-
-    public function getDatabaseMetadata($db_id = 0)
-    {
-        if (!$this->checkSession()) {
-            return false;
-        }
-
-        $data = $this->httpQuery("database/$db_id/metadata", [
-            'timeout' => $this->api_config['timeout'],
-        ]);
-
-        return $data;
-    }
-
-    public function createForeignKey($f_id_src = 0, $f_id_trgt = 0)
-    {
-        if (!$this->checkSession()) {
-            return false;
-        }
-
-        $data = $this->httpQuery("/api/field/$f_id_src", [
-            'json' => [
-                'special_type'       => 'type/FK',
-                'fk_target_field_id' => $f_id_trgt,
-            ],
-        ], 'PUT');
-
-        return $data;
-    }
-
-    public function setItiObjectHardcodedMapping()
-    {
-        if (!isset($_SESSION['grafana']['fields'])) {
-            return false;
-        }
-
-        $ticket  = new \Ticket();
-        $problem = new \Problem();
-        $change  = new \Change();
-
-        return $this->setTicketTypeMapping()
-            && $this->setITILStatusMapping($ticket)
-            && $this->setITILMatrixMapping($ticket)
-            && $this->setITILStatusMapping($problem)
-            && $this->setITILMatrixMapping($problem)
-            && $this->setITILStatusMapping($change)
-            && $this->setITILMatrixMapping($change);
-    }
-
-    public function setTicketTypeMapping()
-    {
-        $field_id = $_SESSION['grafana']['fields']['glpi_tickets.type'];
-        $this->setFieldCustomMapping($field_id, __('Type'));
-        $data = $this->httpQuery("/api/field/$field_id/values", [
-            'json' => [
-                'values' => [
-                    [\Ticket::INCIDENT_TYPE, __('Incident')],
-                    [\Ticket::DEMAND_TYPE, __('Request')],
-                ],
-            ],
-        ], 'POST');
-
-        return isset($data['status']) && $data['status'] === 'success';
-    }
-
-    public function setITILStatusMapping(CommonITILObject $item)
-    {
-        $statuses        = $item::getAllStatusArray();
-        $statuses_topush = [];
-        foreach ($statuses as $key => $label) {
-            $statuses_topush[] = [$key, $label];
-        }
-        $table    = $item::getTable();
-        $field_id = $_SESSION['grafana']['fields']["$table.status"];
-        $this->setFieldCustomMapping($field_id, __('Status'));
-        $data = $this->httpQuery("/api/field/$field_id/values", [
-            'json' => [
-                'values' => $statuses_topush,
-            ],
-        ], 'POST');
-
-        return isset($data['status']) && $data['status'] === 'success';
-    }
-
-    public function setITILMatrixMapping(CommonITILObject $item)
-    {
-        $table = $item::getTable();
-        foreach (['urgency', 'impact', 'priority'] as $matrix_field) {
-            $field_id = $_SESSION['grafana']['fields']["$table.$matrix_field"];
-            $this->setFieldCustomMapping($field_id, __(mb_convert_case($matrix_field, MB_CASE_TITLE)));
-            $data_topush = [
-                [5, _x($matrix_field, 'Very high')],
-                [4, _x($matrix_field, 'High')],
-                [3, _x($matrix_field, 'Medium')],
-                [2, _x($matrix_field, 'Low')],
-                [1, _x($matrix_field, 'Very low')],
-            ];
-            if ($matrix_field === 'priority') {
-                array_unshift($data_topush, [6, _x($matrix_field, 'Major')]);
-            }
-            $data = $this->httpQuery("/api/field/$field_id/values", [
-                'json' => [
-                    'values' => $data_topush,
-                ],
-            ], 'POST');
-
-            if (
-                !isset($data['status'])
-                || $data['status'] !== 'success'
-            ) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public function setFieldCustomMapping($field_id, $label = '')
-    {
-        $data = $this->httpQuery("/api/field/$field_id", [
-            'json' => [
-                'special_type'     => 'type/Category',
-                'has_field_values' => 'list',
-            ],
-        ], 'PUT');
-
-        $data = $this->httpQuery("/api/field/$field_id/dimension", [
-            'json' => [
-                'human_readable_field_id' => null,
-                'type'                    => 'internal',
-                'name'                    => $label,
-            ],
-        ], 'POST');
-    }
-
     public function getFolders()
     {
-        /*         if (!$this->checkSession()) {
-            return false;
-        }
- */
         $data = $this->httpQuery('search?type=dash-folder');
 
         return $data;
@@ -368,10 +94,6 @@ class APIClient extends CommonGLPI
 
     public function getDashboard($dashboard_uid)
     {
-        /*if (!$this->checkSession()) {
-            return false;
-        }
-        */
         return $this->httpQuery("search?type=dash-db&dashboardUIDs=" . urlencode($dashboard_uid));
     }
 
@@ -383,29 +105,6 @@ class APIClient extends CommonGLPI
             $data = $this->httpQuery('search?type=dash-db');
         }
         return $data;
-    }
-
-    /**
-     * Destroy session on grafana api (auth endpoint)
-     *
-     * @return bool
-     */
-    public function disconnect()
-    {
-        if (!isset($_SESSION['grafana']['session_token'])) {
-            return true;
-        }
-
-        // send disconnect with http query
-        $data = $this->httpQuery('session', [
-            'json' => [
-                'session_id' => $_SESSION['grafana']['session_token'],
-            ],
-        ], 'DELETE');
-
-        unset($_SESSION['grafana']['session_token']);
-
-        return $data !== false;
     }
 
 
@@ -442,9 +141,6 @@ class APIClient extends CommonGLPI
      */
     public function httpQuery($resource = '', $params = [], $method = 'GET')
     {
-        /** @var array $CFG_GLPI */
-        global $CFG_GLPI;
-
         // declare default params
         $default_params = [
             '_with_metadata'  => false,
@@ -461,14 +157,11 @@ class APIClient extends CommonGLPI
                 'Accept'                         => 'application/json',
             ],
         ];
-        // if connected, append auth token
-        //      if (isset($_SESSION['grafana']['session_token'])) {
 
         $user_pass_string = $this->api_config['username'] . ':' . (new GLPIKey())->decrypt($this->api_config['password']);
         $base64_token = base64_encode($user_pass_string);
 
         $default_params['headers']['Authorization'] =  "Basic " . $base64_token;
-        //       }
         // merge default params
         $params = array_replace_recursive($default_params, $params);
         //remove empty values
@@ -485,10 +178,12 @@ class APIClient extends CommonGLPI
                 $params,
             );
         } catch (GuzzleException $e) {
+            $safe_params = $params;
+            unset($safe_params['headers']['Authorization']);
             $this->last_error = [
                 'title'     => 'Grafana API error',
                 'exception' => $e->getMessage(),
-                'params'    => $params,
+                'params'    => $safe_params,
             ];
 
             if ($e instanceof RequestException) {

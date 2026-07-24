@@ -35,9 +35,7 @@ use GlpiPlugin\Grafana\Profileright;
 Session::checkLoginUser();
 
 if (!Profileright::canProfileViewDashboards($_SESSION['glpiactiveprofile']['id'])) {
-    $protocol = $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.1';
-
-    header($protocol . ' 403 Forbidden', true, 403);
+    header('HTTP/1.1 403 Forbidden', true, 403);
     echo json_encode([
         'error' => 'You don\'t have permission to view dashboards',
     ]);

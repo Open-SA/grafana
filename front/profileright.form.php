@@ -59,6 +59,9 @@ if (isset($_REQUEST['update'])) {
     $profiles_id = (int) $_REQUEST['profiles_id'];
     $viewableDashboardsUuids = [];
     foreach ($_REQUEST['dashboard'] as $dashboardUuid => $rights) {
+        if (!preg_match('/^[a-zA-Z0-9_-]{1,64}$/', (string) $dashboardUuid)) {
+            continue;
+        }
         Profileright::setDashboardRightsForProfile(
             $profiles_id,
             $dashboardUuid,

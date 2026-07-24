@@ -263,7 +263,7 @@ class Config extends CommonDBTM
                 $out .= "<input type='password' name='fakefield' style='display:none;'>";
                 $out .= "<input type='password'";
                 foreach ($options['attrs'] as $key => $value) {
-                    $out .= "$key='$value' ";
+                    $out .= htmlescape($key) . "='" . htmlescape((string) $value) . "' ";
                 }
                 $out .= '>';
                 break;
@@ -286,10 +286,10 @@ class Config extends CommonDBTM
             case 'paragraph':
                 $out .= '<div class="grafana_paragraph">';
                 $id = $options['attrs']['id'];
-                $out .= "<label class='grafana_label_paragraph' for='{$options['attrs']['id']}'>
+                $out .= "<label class='grafana_label_paragraph' for='" . htmlescape($id) . "'>
                   {$options['label']}</label>";
                 $options['attrs']['display'] = false;
-                $out .= "<p id='" . $id . "'>" . nl2br($options['attrs']['value']) . "</p>";
+                $out .= "<p id='" . htmlescape($id) . "'>" . nl2br(htmlescape($options['attrs']['value'])) . "</p>";
                 $out .= "<button id='copy_clipboard' type='button' class='btn btn-secondary'>"
                     . "<i id='button_icon' class='ti ti-clipboard'></i> "
                     . "<span id='button_text'>" . __('Copy', 'grafana') . "</span>"
@@ -304,9 +304,9 @@ class Config extends CommonDBTM
                 break;
 
             case 'iconbutton':
-                $out .= "<button id='{$options['attrs']['id']}' type='button' class='btn btn-secondary'>"
-                    . "<i id='{$options['attrs']['icon_id']}' class='{$options['attrs']['icon']}'></i> "
-                    . "<span id='{$options['attrs']['text_id']}'> {$options['attrs']['buttontext']} </span>"
+                $out .= "<button id='" . htmlescape($options['attrs']['id']) . "' type='button' class='btn btn-secondary'>"
+                    . "<i id='" . htmlescape($options['attrs']['icon_id']) . "' class='" . htmlescape($options['attrs']['icon']) . "'></i> "
+                    . "<span id='" . htmlescape($options['attrs']['text_id']) . "'> " . htmlescape($options['attrs']['buttontext']) . " </span>"
                     . "</button>";
                 break;
         }
