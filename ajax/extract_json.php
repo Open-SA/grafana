@@ -50,7 +50,7 @@ if (!isset($_REQUEST['uid']) || !isset($_REQUEST['type'])) {
 switch ($_REQUEST['type']) {
     case 'dashboard':
         if (!Profileright::canProfileViewDashboard($_SESSION['glpiactiveprofile']['id'], $_REQUEST['uid'])) {
-            header($_SERVER['SERVER_PROTOCOL'] . ' 403 Forbidden', true, 403);
+            header('HTTP/1.1 403 Forbidden', true, 403);
             return;
         }
         Config::displayDashboardJson($_REQUEST['uid']);

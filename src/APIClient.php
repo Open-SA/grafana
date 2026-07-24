@@ -485,10 +485,12 @@ class APIClient extends CommonGLPI
                 $params,
             );
         } catch (GuzzleException $e) {
+            $safe_params = $params;
+            unset($safe_params['headers']['Authorization']);
             $this->last_error = [
                 'title'     => 'Grafana API error',
                 'exception' => $e->getMessage(),
-                'params'    => $params,
+                'params'    => $safe_params,
             ];
 
             if ($e instanceof RequestException) {
