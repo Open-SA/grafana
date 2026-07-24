@@ -40,7 +40,7 @@ use Config;
 use GlpiPlugin\Grafana\APIClient;
 
 include('../../../inc/includes.php');
-Session::checkRight("config", READ);
+Session::checkRight("config", UPDATE);
 
 require_once __DIR__ . '/../src/Config.php';
 
@@ -57,18 +57,17 @@ if (isset($_REQUEST["empty_button"])) {
         Html::back();
     }
     if (!empty($_POST["update"])) {
-        $context = array_key_exists('config_context', $_POST) ? $_POST['config_context'] : 'core';
+        $_POST['config_context'] = 'plugin:grafana';
 
         if ($CFG_GLPI['version'] < '11.0.0') {
             $glpikey = new GLPIKey();
             foreach (array_keys($_POST) as $field) {
-                if ($glpikey->isConfigSecured($context, $field)) {
+                if ($glpikey->isConfigSecured('plugin:grafana', $field)) {
                     // Field must not be altered, it will be encrypted and never displayed, so sanitize is not necessary.
                     $_POST[$field] = $_UPOST[$field];
                 }
             }
         }
-
 
         $config->update($_POST);
 
