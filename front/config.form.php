@@ -75,7 +75,7 @@ if (isset($_REQUEST["empty_button"])) {
 
         $apiclient = new APIClient();
         $apiclient->httpQuery(
-            '/grafana/api/user/preferences',
+            'user/preferences',
             [
                 'json' => [
                     'theme' => $mode
