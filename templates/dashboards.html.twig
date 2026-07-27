@@ -1,0 +1,28 @@
+{#
+ # -------------------------------------------------------------------------
+ # Grafana plugin for GLPI
+ # -------------------------------------------------------------------------
+ # Renders the folders/dashboards tree in the "Reports and dashboards
+ # specifications" page.
+ #
+ # Variables:
+ #   tree  array  Normalised tree produced by fillTree() — each top-level
+ #                node is either a dash-folder (with optional .subfolders
+ #                and .dashboards) or a dash-db entry.
+ # -------------------------------------------------------------------------
+ #}
+
+<div class="grafana_config">
+    <h1>{{ __('Reports and dashboards specifications', 'grafana') }}</h1>
+
+    {% if tree is not empty %}
+        <h3>{{ __('Listing:', 'grafana') }}</h3>
+        <ul class="grafana_folder_list">
+            {% for node in tree %}
+                {% include '@grafana/partials/tree_node.html.twig' with {node: node} only %}
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>{{ __('Unable to access dashboards data. Please check plugin configuration.', 'grafana') }}</p>
+    {% endif %}
+</div>

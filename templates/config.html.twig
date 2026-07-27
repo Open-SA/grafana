@@ -1,0 +1,142 @@
+{#
+ # -------------------------------------------------------------------------
+ # Grafana plugin for GLPI
+ # -------------------------------------------------------------------------
+ # Plugin configuration form (shown in Setup → General → Grafana tab).
+ #
+ # Variables:
+ #   form_url        string       POST target for the config form
+ #   current_config  array        Saved values: url, username, lightmode
+ #   jwks_url        string       Absolute URL of front/jwks.php
+ #   is_valid        bool         Whether the current config can reach Grafana
+ #   api_status      array|null   label => bool map of API health checks
+ #   last_error      array|null   Last API error (keys: exception, …)
+ #   dashboards_url  string       URL of front/dashboards.php
+ # -------------------------------------------------------------------------
+ #}
+
+<div class="grafana_config">
+    <h1>{{ __('Grafana plugin configuration', 'grafana') }}</h1>
+
+    <form name="form" action="{{ form_url }}" method="post">
+        <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+
+        <div id="base_config" class="grafana_config_block">
+
+            {# --- Grafana URL --- #}
+            <div class="grafana_field">
+                <input type="text" name="url"
+                       value="{{ current_config.url }}"
+                       placeholder="https://grafana.domain"
+                       required
+                       style="width:50%;"
+                       class="grafana_input form-control"
+                       id="grafanaconfig_url">
+                <label class="grafana_label" for="grafanaconfig_url">
+                    {{ __('Grafana URL', 'grafana') }}
+                </label>
+            </div>
+
+            {# --- Username --- #}
+            <div class="grafana_field">
+                <input type="text" name="username"
+                       value="{{ current_config.username }}"
+                       required
+                       style="width:50%;"
+                       class="grafana_input form-control"
+                       id="grafanaconfig_username">
+                <label class="grafana_label" for="grafanaconfig_username">
+                    {{ __('Grafana Username', 'grafana') }}
+                </label>
+            </div>
+
+            {# --- Password (never pre-filled) --- #}
+            <div class="grafana_field">
+                <input type="password" name="fakefield" style="display:none;">
+                <input type="password" name="password"
+                       style="width:50%;"
+                       class="grafana_input form-control"
+                       id="grafanaconfig_password">
+                <label class="grafana_label" for="grafanaconfig_password">
+                    {{ __('Grafana Password', 'grafana') }}
+                </label>
+            </div>
+
+            {# --- JWKS URL (read-only paragraph with copy button) --- #}
+            <div class="grafana_field">
+                <div class="grafana_paragraph">
+                    <label class="grafana_label_paragraph" for="grafana_jwks_url">
+                        {{ __('JWKS url', 'grafana') }}
+                    </label>
+                    <p id="grafana_jwks_url">{{ jwks_url }}</p>
+                    <button id="copy_clipboard" type="button" class="btn btn-secondary">
+                        <i id="button_icon" class="ti ti-clipboard"></i>
+                        <span id="button_text">{{ __('Copy', 'grafana') }}</span>
+                    </button>
+                </div>
+            </div>
+
+            {# --- Light mode checkbox --- #}
+            <div class="grafana_field">
+                <input type="hidden" name="lightmode" value="0">
+                <input type="checkbox" class="form-check-input"
+                       name="lightmode"
+                       id="grafana_lightmode"
+                       {{ current_config.lightmode ? 'checked' : '' }}>
+                <label class="grafana_label" for="grafana_lightmode">
+                    {{ __('Grafana light mode theme', 'grafana') }}
+                </label>
+            </div>
+
+            {# Hidden inputs used by the copy-to-clipboard JS in grafana.js #}
+            <input type="hidden" name="copy"   id="translated_copy"   value="{{ __('Copy', 'grafana') }}">
+            <input type="hidden" name="copied" id="translated_copied" value="{{ __('Copied!', 'grafana') }}">
+
+            <input type="hidden" name="config_class"   value="GlpiPlugin\Grafana\Config">
+            <input type="hidden" name="config_context" value="plugin:grafana">
+
+            <button type="submit" name="update" value="1" class="btn btn-primary">
+                <i class="ti ti-device-floppy"></i>
+                <span>{{ _x('button', 'Save') }}</span>
+            </button>
+
+        </div>
+    </form>
+
+    {% if is_valid %}
+
+        <h1>{{ __('API status', 'grafana') }}</h1>
+        <ul>
+            {% for label, ok in api_status %}
+                <li>
+                    <img src="{{ config('root_doc') }}/pics/{{ ok ? 'greenbutton.png' : 'redbutton.png' }}" alt="">
+                    &nbsp;{{ label }}
+                </li>
+            {% endfor %}
+        </ul>
+
+        {% if last_error %}
+            <h1>{{ __('Last Error', 'grafana') }}</h1>
+            {% if last_error.exception is defined %}
+                {{ last_error.exception }}
+            {% else %}
+                {% for key, val in last_error %}
+                    {% if val is not iterable %}
+                        <div><strong>{{ key }}:</strong> {{ val }}</div>
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
+        {% endif %}
+
+        <div id="actions">
+            <h1>{{ __('Action(s)', 'grafana') }}</h1>
+            <div class="btn-group-vertical">
+                <a href="{{ dashboards_url }}" class="btn btn-outline-secondary">
+                    <i class="ti ti-chart-infographic"></i>
+                    <span>{{ __('Show reports and dashboards specifications', 'grafana') }}</span>
+                </a>
+            </div>
+        </div>
+
+    {% endif %}
+</div>

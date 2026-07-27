@@ -44,7 +44,7 @@ use GlpiPlugin\Grafana\APIClient;
 use Central;
 use Dropdown;
 use DateTimeImmutable;
-use Html;
+use Glpi\Application\View\TemplateRenderer;
 
 use Lcobucci\JWT\Configuration;
 
@@ -108,7 +108,6 @@ class Dashboard extends CommonDBTM
      */
     public static function showForCentral(Central $item, $withtemplate = 0, $is_helpdesk = false)
     {
-
         global $CFG_GLPI;
 
         $apiclient = new APIClient();
@@ -120,12 +119,10 @@ class Dashboard extends CommonDBTM
             $dashboards = array_filter(
                 $dashboards,
                 function ($dashboard) {
-                    $canView            = Profileright::canProfileViewDashboard(
+                    return Profileright::canProfileViewDashboard(
                         $_SESSION['glpiactiveprofile']['id'],
                         $dashboard['uid'],
                     );
-
-                    return $canView;
                 },
             );
         }
@@ -141,29 +138,33 @@ class Dashboard extends CommonDBTM
             $currentUuid = current($dashboards)['id'];
         }
 
+        ob_start();
         Dropdown::showFromArray(
             'current_dashboard',
             array_combine(array_column($dashboards, 'id'), array_column($dashboards, 'title')),
             [
-                'on_change' => ($is_helpdesk) ? 'location.href = location.origin+location.pathname+"?uuid="+$(this).val()' : 'reloadTab("uuid=" + $(this).val());',
+                'on_change' => $is_helpdesk
+                    ? 'location.href = location.origin+location.pathname+"?uuid="+$(this).val()'
+                    : 'reloadTab("uuid=" + $(this).val());',
                 'value'     => $currentUuid,
             ],
         );
+        $dropdown = ob_get_clean();
 
-        $config = Config::getConfig();
         $private_key_path = GLPI_PLUGIN_DOC_DIR . '/grafana/keys/private_key.pem';
         $public_key_path  = GLPI_PLUGIN_DOC_DIR . '/grafana/keys/public_key.pem';
 
         if (!file_exists($private_key_path) || !file_exists($public_key_path)) {
-            echo '<div class="alert alert-warning">'
-                . __('Grafana plugin: RSA keys not found. Please reinstall the plugin.', 'grafana')
-                . '</div>';
+            TemplateRenderer::getInstance()->display('@grafana/dashboard.html.twig', [
+                'dropdown'     => $dropdown,
+                'keys_missing' => true,
+            ]);
             return;
         }
 
+        $config      = Config::getConfig();
         $private_key = file_get_contents($private_key_path);
         $public_key  = file_get_contents($public_key_path);
-
 
         $signer_config = Configuration::forAsymmetricSigner(
             new Sha256(),
@@ -171,97 +172,32 @@ class Dashboard extends CommonDBTM
             InMemory::plainText($public_key),
         );
 
-
-        // Create the token
-        $now = new DateTimeImmutable();
+        $now   = new DateTimeImmutable();
         $token = $signer_config->builder()
-            ->issuedBy("glpi_plugin") // Configures the issuer (iss claim)
-            ->expiresAt($now->modify('+1 hour')) // Expiration time
-            ->relatedTo($config['username']) // Sub claim with the username of the user in the config
-            ->withHeader('kid', 'grafana-key-1') // Kinda selects the public key to use Grafana side
-            ->getToken($signer_config->signer(), $signer_config->signingKey()); // Retrieves the generated token
+            ->issuedBy('glpi_plugin')
+            ->expiresAt($now->modify('+1 hour'))
+            ->relatedTo($config['username'])
+            ->withHeader('kid', 'grafana-key-1')
+            ->getToken($signer_config->signer(), $signer_config->signingKey());
 
         $currentDashboard = current(array_filter($dashboards, function ($dashboard) use ($currentUuid) {
             return $dashboard['id'] == $currentUuid;
         }));
         $dashboardUrl = $currentDashboard['url'];
-        $url = rtrim($config['url'], '/');
+        $url          = rtrim($config['url'], '/');
         if (strpos($dashboardUrl, '/d/') !== 0) {
             $dashboardUrl = substr($dashboardUrl, strpos($dashboardUrl, '/d/'));
         }
-        // The kiosk parameter is used to hide the Grafana header and footer so it only shows the dashboard
+        // The kiosk parameter hides the Grafana header/footer so only the dashboard is shown
         $baseIframeUrl = $url . $dashboardUrl . '?kiosk';
-        $fullUrl = $baseIframeUrl . '&auth_token=' . $token->toString();
 
-        echo "<iframe src='" . htmlescape($fullUrl) . "' id='grafana_iframe' allowtransparency></iframe>";
-
-        echo Html::scriptBlock("
-            (function() {
-                var baseIframeUrl = '" . jsescape($baseIframeUrl) . "';
-                var currentTokenExpiry = 0;
-                var pendingRefresh = false;
-                var refreshTimeout = null;
-
-                function getTokenExpiry(token) {
-                    try {
-                        var payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
-                        return payload.exp * 1000;
-                    } catch (e) {
-                        return Date.now() + 55 * 60 * 1000;
-                    }
-                }
-
-                function doRefresh() {
-                    $.ajax({
-                        url: '" . $CFG_GLPI['url_base'] . "/plugins/grafana/ajax/refresh_token.php',
-                        dataType: 'json',
-                        cache: false,
-                        success: function(data) {
-                            if (data.token) {
-                                var iframe = document.getElementById('grafana_iframe');
-                                if (iframe) {
-                                    iframe.src = baseIframeUrl + '&auth_token=' + data.token;
-                                }
-                                pendingRefresh = false;
-                                scheduleRefresh(data.token);
-                            }
-                        },
-                        error: function() {
-                            refreshTimeout = setTimeout(doRefresh, 30 * 1000);
-                        }
-                    });
-                }
-
-                function scheduleRefresh(token) {
-                    if (refreshTimeout) {
-                        clearTimeout(refreshTimeout);
-                    }
-                    currentTokenExpiry = getTokenExpiry(token);
-                    var delay = Math.max(30 * 1000, currentTokenExpiry - Date.now() - 2 * 60 * 1000);
-                    refreshTimeout = setTimeout(function() {
-                        if (document.visibilityState === 'hidden') {
-                            pendingRefresh = true;
-                        } else {
-                            doRefresh();
-                        }
-                    }, delay);
-                }
-
-                document.addEventListener('visibilitychange', function() {
-                    if (document.visibilityState === 'visible') {
-                        var tokenExpiredOrClose = Date.now() >= currentTokenExpiry - 2 * 60 * 1000;
-                        if (pendingRefresh || tokenExpiredOrClose) {
-                            if (refreshTimeout) {
-                                clearTimeout(refreshTimeout);
-                            }
-                            pendingRefresh = false;
-                            doRefresh();
-                        }
-                    }
-                });
-
-                scheduleRefresh('" . $token->toString() . "');
-            })();
-        ");
+        TemplateRenderer::getInstance()->display('@grafana/dashboard.html.twig', [
+            'dropdown'        => $dropdown,
+            'keys_missing'    => false,
+            'iframe_src'      => $baseIframeUrl . '&auth_token=' . $token->toString(),
+            'base_iframe_url' => $baseIframeUrl,
+            'initial_token'   => $token->toString(),
+            'refresh_url'     => $CFG_GLPI['url_base'] . '/plugins/grafana/ajax/refresh_token.php',
+        ]);
     }
 }

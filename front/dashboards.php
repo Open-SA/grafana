@@ -30,6 +30,7 @@
 
 use GlpiPlugin\Grafana\Config;
 use GlpiPlugin\Grafana\APIClient;
+use Glpi\Application\View\TemplateRenderer;
 
 include('../../../inc/includes.php');
 
@@ -43,32 +44,23 @@ Html::header(
 
 Session::checkRight('config', READ);
 
-echo '<div class="grafana_config">';
-echo '<h1>' . __('Reports and dashboards specifications', 'grafana') . '</h1>';
+$tree = [];
 $grafanaConfig = new Config();
 $apiclient      = new APIClient();
 if ($grafanaConfig::isValid()) {
-    $folders = $apiclient->getFolders();
+    $folders        = $apiclient->getFolders();
     $all_dashboards = $apiclient->getDashboards();
 
-    if (
-        $all_dashboards !== false
-        && count($all_dashboards)
-    ) {
-        $folderRefs = [];
+    if ($all_dashboards !== false && count($all_dashboards)) {
+        $folderRefs  = [];
         fixOutOfBoundsDashboards($all_dashboards, $folders);
         $folderIndex = indexFolders($folders, $all_dashboards);
-        $folderTree = createFolderTree($folderIndex, $folderRefs);
-        $tree = fillTree($folderRefs, $all_dashboards, $folderTree);
-
-        echo '<h3>' . __('Listing:', 'grafana') . '</h3>';
-        printTree($tree);
+        $folderTree  = createFolderTree($folderIndex, $folderRefs);
+        $tree        = fillTree($folderRefs, $all_dashboards, $folderTree);
     }
-} else {
-    echo '<p>' . __('Unable to access dashboards data. Please check plugin configuration.', 'grafana') . '</p>';
 }
 
-echo '</div>';
+TemplateRenderer::getInstance()->display('@grafana/dashboards.html.twig', ['tree' => $tree]);
 
 Html::footer();
 
@@ -153,50 +145,4 @@ function fillTree($folderRefs, $all_dashboards, $tree)
     }
 
     return $tree;
-}
-
-function printTree($tree)
-{
-
-    echo "<ul class='grafana_folder_list'>";
-    foreach ($tree as $node) {
-        if ($node['type'] === 'dash-folder') {
-            printFolder($node);
-        } else {
-            printDashboard($node);
-        }
-    }
-    echo '</ul>';
-}
-
-function printFolder($folder)
-{
-    echo '<li><label>' . htmlescape($folder['title']) . '</label>';
-    echo "<ul class='extract_list'>";
-
-
-    foreach ($folder['subfolders'] ?? [] as $subfolder) {
-        printFolder($subfolder);
-    }
-
-    printDashboards($folder['dashboards'] ?? []);
-
-    echo "</ul>";
-    echo '</li>';
-}
-
-function printDashboard($dashboard)
-{
-    echo "<li><a href='#'
-                class='extract'
-                data-uid='" . htmlescape($dashboard['uid']) . "' data-type='dashboard'>" .
-        htmlescape($dashboard['title']) .
-        '</a></li>';
-}
-
-function printDashboards($dashboards)
-{
-    foreach ($dashboards as $dashboard) {
-        printDashboard($dashboard);
-    }
 }

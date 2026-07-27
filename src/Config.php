@@ -41,9 +41,9 @@ use Config as GlpiConfig;
 use Html;
 use CommonGLPI;
 use Session;
-use Dropdown;
 use GlpiPlugin\Grafana\APIClient;
 use Plugin;
+use Glpi\Application\View\TemplateRenderer;
 
 class Config extends CommonDBTM
 {
@@ -95,233 +95,35 @@ class Config extends CommonDBTM
         /** @var array $CFG_GLPI */
         global $CFG_GLPI;
 
-        $public_key = file_get_contents(GLPI_PLUGIN_DOC_DIR . '/grafana/keys/public_key.pem');
-
-        $canedit = Session::haveRight("config", UPDATE);
-
-        if (!$canedit) {
+        if (!Session::haveRight("config", UPDATE)) {
             return false;
         }
 
         $current_config = self::getConfig();
-        echo "<div class='grafana_config'>";
-        echo '<h1>' . __('Grafana plugin configuration', 'grafana') . '</h1>';
+        $is_valid       = self::isValid();
+        $api_status     = null;
+        $last_error     = null;
 
-        if ($canedit) {
-            echo "<form name='form' action='" . Plugin::getWebDir('grafana') . "/front/config.form.php' method='post'>";
-        }
-
-        echo "<div id='base_config' class='grafana_config_block'>";
-        echo self::showField([
-            'label' => __('Grafana URL', 'grafana'),
-            'attrs' => [
-                'name'        => 'url',
-                'value'       => $current_config['url'],
-                'placeholder' => 'https://grafana.domain',
-                'required' => true,
-            ],
-        ]);
-        echo self::showField([
-            'inputtype' => 'text',
-            'label'    => __('Grafana Username', 'grafana'),
-            'attrs'    => [
-                'name'     => 'username',
-                'value'    => $current_config['username'],
-                'required' => true,
-            ],
-        ]);
-
-        echo self::showField([
-            'inputtype' => 'password',
-            'label'     => __('Grafana Password', 'grafana'),
-            'attrs'     => [
-                'name'     => 'password',
-                'value'    => '',
-                'required' => false,
-            ],
-        ]);
-
-        echo self::showField([
-            'inputtype' => 'paragraph',
-            'label'     => __('JWKS url', 'grafana'),
-            'attrs'    => [
-                'value' => $CFG_GLPI['url_base'] . "/plugins/grafana/front/jwks.php",
-                'id' => 'grafana_jwks_url'
-            ],
-        ]);
-
-        echo self::showField([
-            'inputtype' => 'checkbox',
-            'label'     => __('Grafana light mode theme', 'grafana'),
-            'attrs'     => [
-                'name'     => 'lightmode',
-                'value'    => $current_config['lightmode'] ?? 0,
-                'required' => false,
-                'id' => 'grafana_lightmode',
-            ],
-        ]);
-
-        echo "<input type='hidden' name='copy' id='translated_copy' value='" . __('Copy', 'grafana') . "'>";
-        echo "<input type='hidden' name='copied' id='translated_copied' value='" . __('Copied!', 'grafana') . "'>";
-
-        if ($canedit) {
-            echo Html::hidden('config_class', ['value' => __CLASS__]);
-            echo Html::hidden('config_context', ['value' => 'plugin:grafana']);
-            echo Html::submit(_sx('button', 'Save'), [
-                'class' => 'btn btn-primary',
-                'icon'  => 'ti ti-device-floppy',
-                'name'  => 'update',
-            ]);
-        }
-        echo '</div>';
-        Html::closeForm();
-
-
-        if (self::isValid()) {
-            echo "<h1>" . __("API status", 'grafana') . "</h1>";
-            $apiclient    = new APIClient();
-            $all_status   = $apiclient->status();
-
-            echo "<ul>";
-            foreach ($all_status as $status_label => $status) {
-                $color_png = "greenbutton.png";
-                if (!$status) {
-                    $color_png = "redbutton.png";
-                }
-                echo "<li>";
-                echo Html::image($CFG_GLPI['root_doc'] . "/pics/$color_png");
-                echo "&nbsp;" . $status_label;
-                echo "</li>";
-            }
-            echo "</ul>";
-
-            $error = $apiclient->getLastError();
+        if ($is_valid) {
+            $apiclient  = new APIClient();
+            $api_status = $apiclient->status();
+            $error      = $apiclient->getLastError();
             if (count($error)) {
-                echo "<h1>" . __("Last Error", 'grafana') . "</h1>";
-                if (isset($error['exception'])) {
-                    echo htmlescape($error['exception']);
-                } else {
-                    Html::printCleanArray($error);
-                }
+                $last_error = $error;
             }
-
-            echo "<div id='actions'>";
-            if ($canedit) {
-                echo "<form name='form' action='" . self::getFormUrl() . "' method='post'>";
-            }
-
-            echo "<h1>" . __("Action(s)", 'grafana') . "</h1>";
-            echo "<div class='btn-group-vertical'>";
-
-            Html::closeForm();
-            echo '<a href="' . Plugin::getWebDir('grafana') . '/front/dashboards.php" class="btn btn-outline-secondary">'
-                . "<i class='ti ti-chart-infographic'></i>"
-                . "<span>" . __('Show reports and dashboards specifications', 'grafana') . "</span>"
-                . '</a>';
-
-            echo '</div>';
-        }
-    }
-
-    public static function showField($options = [])
-    {
-        $rand            = mt_rand();
-        $default_options = [
-            'inputtype' => 'text',
-            'itemtype'  => '',
-            'label'     => '',
-            'help'      => '',
-            'attrs'     => [
-                'name'        => '',
-                'value'       => '',
-                'placeholder' => '',
-                'style'       => 'width:50%;',
-                'id'          => "grafanaconfig_field_$rand",
-                'class'       => 'grafana_input form-control',
-                'required'    => 'required',
-                'on_change'   => '',
-            ],
-        ];
-        $options = array_replace_recursive($default_options, $options);
-
-        if ($options['attrs']['required'] === false) {
-            unset($options['attrs']['required']);
         }
 
-        $out = '';
-        $out .= "<div class='grafana_field'>";
+        TemplateRenderer::getInstance()->display('@grafana/config.html.twig', [
+            'form_url'       => Plugin::getWebDir('grafana') . '/front/config.form.php',
+            'current_config' => $current_config,
+            'jwks_url'       => $CFG_GLPI['url_base'] . '/plugins/grafana/front/jwks.php',
+            'is_valid'       => $is_valid,
+            'api_status'     => $api_status,
+            'last_error'     => $last_error,
+            'dashboards_url' => Plugin::getWebDir('grafana') . '/front/dashboards.php',
+        ]);
 
-        // call the field according to its type
-        switch ($options['inputtype']) {
-            default:
-            case 'text':
-                $out .= Html::input('fakefield', ['style' => 'display:none;']);
-                $out .= Html::input($options['attrs']['name'], $options['attrs']);
-                break;
-
-            case 'password':
-                $out .= "<input type='password' name='fakefield' style='display:none;'>";
-                $out .= "<input type='password'";
-                foreach ($options['attrs'] as $key => $value) {
-                    $out .= htmlescape($key) . "='" . htmlescape((string) $value) . "' ";
-                }
-                $out .= '>';
-                break;
-
-            case 'yesno':
-                $options['attrs']['display'] = false;
-                $out .= Dropdown::showYesNo($options['attrs']['name'], $options['attrs']['value'], -1, $options['attrs']);
-                break;
-
-            case 'dropdown':
-                $options['attrs']['display'] = false;
-                $out .= Dropdown::show($options['itemtype'], $options['attrs']);
-                break;
-
-            case 'number':
-                $options['attrs']['display'] = false;
-                $out .= Dropdown::showNumber($options['attrs']['name'], $options['attrs']);
-                break;
-
-            case 'paragraph':
-                $out .= '<div class="grafana_paragraph">';
-                $id = $options['attrs']['id'];
-                $out .= "<label class='grafana_label_paragraph' for='" . htmlescape($id) . "'>
-                  {$options['label']}</label>";
-                $options['attrs']['display'] = false;
-                $out .= "<p id='" . htmlescape($id) . "'>" . nl2br(htmlescape($options['attrs']['value'])) . "</p>";
-                $out .= "<button id='copy_clipboard' type='button' class='btn btn-secondary'>"
-                    . "<i id='button_icon' class='ti ti-clipboard'></i> "
-                    . "<span id='button_text'>" . __('Copy', 'grafana') . "</span>"
-                    . "</button>";
-                $out .= '</div>';
-                break;
-
-            case 'checkbox':
-                $checked = $options['attrs']['value'] ? 'checked' : '';
-                $out .= "<input type='hidden' name='{$options['attrs']['name']}' value='0'>";
-                $out .= "<input type='checkbox' class='form-check-input' name='{$options['attrs']['name']}' id='{$options['attrs']['id']}' " . $checked . ">";
-                break;
-
-            case 'iconbutton':
-                $out .= "<button id='" . htmlescape($options['attrs']['id']) . "' type='button' class='btn btn-secondary'>"
-                    . "<i id='" . htmlescape($options['attrs']['icon_id']) . "' class='" . htmlescape($options['attrs']['icon']) . "'></i> "
-                    . "<span id='" . htmlescape($options['attrs']['text_id']) . "'> " . htmlescape($options['attrs']['buttontext']) . " </span>"
-                    . "</button>";
-                break;
-        }
-        if ($options['inputtype'] != 'paragraph') {
-            $out .= "<label class='grafana_label' for='{$options['attrs']['id']}'>
-                  {$options['label']}</label>";
-        }
-
-        if (strlen($options['help'])) {
-            $out .= "<i class='fa grafana_help fa-info-circle' title='{$options['help']}'></i>";
-        }
-
-        $out .= '</div>';
-
-        return $out;
+        return true;
     }
 
     /**
