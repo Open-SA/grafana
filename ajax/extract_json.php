@@ -49,7 +49,11 @@ if (!isset($_REQUEST['uid']) || !isset($_REQUEST['type'])) {
 
 switch ($_REQUEST['type']) {
     case 'dashboard':
-        if (!Profileright::canProfileViewDashboard($_SESSION['glpiactiveprofile']['id'], $_REQUEST['uid'])) {
+        // Config READ grants access to the full dashboard specs page, so allow JSON too.
+        // Otherwise fall back to per-dashboard profile rights (used from the Central tab).
+        $canView = Session::haveRight('config', READ)
+            || Profileright::canProfileViewDashboard($_SESSION['glpiactiveprofile']['id'], $_REQUEST['uid']);
+        if (!$canView) {
             header('HTTP/1.1 403 Forbidden', true, 403);
             return;
         }

@@ -54,7 +54,7 @@ $(function() {
       var type = $(this).data('type');
       glpi_ajax_dialog({
          dialogclass: 'modal-lg',
-         url: CFG_GLPI.root_doc + '/' + GLPI_PLUGINS_PATH.grafana + '/ajax/extract_json.php',
+         url: CFG_GLPI.root_doc + GLPI_PLUGINS_PATH.grafana + '/ajax/extract_json.php',
          params: {
             uid: uid,
             type: type
