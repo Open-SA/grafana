@@ -56,6 +56,12 @@ if (isset($_REQUEST["empty_button"])) {
         $config->update($_POST);
         Html::back();
     }
+    if (!empty($_POST["update_url_params"])) {
+        $_POST['config_context'] = 'plugin:grafana';
+        $config->update($_POST);
+        Html::back();
+    }
+
     if (!empty($_POST["update"])) {
         $_POST['config_context'] = 'plugin:grafana';
 

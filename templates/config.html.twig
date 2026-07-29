@@ -109,6 +109,44 @@
         </div>
     </form>
 
+    {# ── URL params form ───────────────────────────────────────────────── #}
+    <h1>{{ __('GLPI context variables for Grafana', 'grafana') }}</h1>
+
+    <form name="form_url_params" action="{{ form_url }}" method="post">
+        <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="config_class"   value="GlpiPlugin\Grafana\Config">
+        <input type="hidden" name="config_context" value="plugin:grafana">
+
+        <div class="grafana_config_block">
+            <p class="text-muted mb-3" style="font-size:.9em;">
+                {{ __('Selected fields are appended to the Grafana iframe URL as dashboard variables (var-&lt;key&gt;=&lt;value&gt;). Configure matching variables in each Grafana dashboard.', 'grafana') }}
+            </p>
+
+            <div class="row row-cols-1 row-cols-md-2 g-2">
+                {% for key, label in url_params_pool %}
+                    <div class="col">
+                        <div class="form-check">
+                            <input type="hidden"   name="url_param_{{ key }}" value="0">
+                            <input type="checkbox" name="url_param_{{ key }}" value="1"
+                                   class="form-check-input"
+                                   id="url_param_{{ key }}"
+                                   {{ (current_config['url_param_' ~ key] ?? '0') == '1' ? 'checked' : '' }}>
+                            <label class="form-check-label" for="url_param_{{ key }}">
+                                {{ label }}
+                                <code class="ms-1" style="font-size:.8em;">var-{{ key }}</code>
+                            </label>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <button type="submit" name="update_url_params" value="1" class="btn btn-primary mt-3">
+                <i class="ti ti-device-floppy"></i>
+                <span>{{ _x('button', 'Save') }}</span>
+            </button>
+        </div>
+    </form>
+
     {% if is_valid %}
 
         <h1>{{ __('API status', 'grafana') }}</h1>

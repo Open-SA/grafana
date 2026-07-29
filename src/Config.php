@@ -114,13 +114,14 @@ class Config extends CommonDBTM
         }
 
         TemplateRenderer::getInstance()->display('@grafana/config.html.twig', [
-            'form_url'       => Plugin::getWebDir('grafana') . '/front/config.form.php',
-            'current_config' => $current_config,
-            'jwks_url'       => $CFG_GLPI['url_base'] . '/plugins/grafana/front/jwks.php',
-            'is_valid'       => $is_valid,
-            'api_status'     => $api_status,
-            'last_error'     => $last_error,
-            'dashboards_url' => Plugin::getWebDir('grafana') . '/front/dashboards.php',
+            'form_url'        => Plugin::getWebDir('grafana') . '/front/config.form.php',
+            'current_config'  => $current_config,
+            'jwks_url'        => $CFG_GLPI['url_base'] . '/plugins/grafana/front/jwks.php',
+            'is_valid'        => $is_valid,
+            'api_status'      => $api_status,
+            'last_error'      => $last_error,
+            'dashboards_url'  => Plugin::getWebDir('grafana') . '/front/dashboards.php',
+            'url_params_pool' => self::getUrlParamsPool(),
         ]);
 
         return true;
@@ -171,6 +172,74 @@ class Config extends CommonDBTM
         }
 
         return $input;
+    }
+
+    /**
+     * Full pool of GLPI session fields that can be forwarded to Grafana as URL variables.
+     * Keys become the Grafana variable name (prepended with "var-").
+     *
+     * @return array<string, string>  key => translated label
+     */
+    public static function getUrlParamsPool(): array
+    {
+        return [
+            'glpi_user_id'      => __('User ID', 'grafana'),
+            'glpi_username'     => __('Username (login)', 'grafana'),
+            'glpi_firstname'    => __('First name', 'grafana'),
+            'glpi_lastname'     => __('Last name', 'grafana'),
+            'glpi_entity_id'    => __('Active entity ID', 'grafana'),
+            'glpi_entity_name'  => __('Active entity name', 'grafana'),
+            'glpi_entity_ids'   => __('All active entity IDs (comma-separated)', 'grafana'),
+            'glpi_profile_id'   => __('Active profile ID', 'grafana'),
+            'glpi_profile_name' => __('Active profile name', 'grafana'),
+            'glpi_groups'       => __('Groups (comma-separated IDs)', 'grafana'),
+            'glpi_language'     => __('Language', 'grafana'),
+        ];
+    }
+
+    /**
+     * Read the current session and return a value for each pool key.
+     *
+     * @return array<string, string>
+     */
+    public static function getSessionUrlParamValues(): array
+    {
+        /** @var array $CFG_GLPI */
+        return [
+            'glpi_user_id'      => (string) Session::getLoginUserID(),
+            'glpi_username'     => (string) ($_SESSION['glpiname'] ?? ''),
+            'glpi_firstname'    => (string) ($_SESSION['glpifirstname'] ?? ''),
+            'glpi_lastname'     => (string) ($_SESSION['glpirealname'] ?? ''),
+            'glpi_entity_id'    => (string) ($_SESSION['glpiactive_entity'] ?? ''),
+            'glpi_entity_name'  => (string) ($_SESSION['glpiactive_entity_name'] ?? ''),
+            'glpi_entity_ids'   => implode(',', (array) ($_SESSION['glpiactiveentities'] ?? [])),
+            'glpi_profile_id'   => (string) ($_SESSION['glpiactiveprofile']['id'] ?? ''),
+            'glpi_profile_name' => (string) ($_SESSION['glpiactiveprofile']['name'] ?? ''),
+            'glpi_groups'       => implode(',', (array) ($_SESSION['glpigroups'] ?? [])),
+            'glpi_language'     => (string) ($_SESSION['glpilanguage'] ?? ''),
+        ];
+    }
+
+    /**
+     * Build the Grafana URL query string for all enabled session params.
+     * Returns a string like "&var-glpi_entity_id=42&var-glpi_user_id=5",
+     * or an empty string if nothing is enabled.
+     *
+     * @return string
+     */
+    public static function buildGrafanaUrlParams(): string
+    {
+        $config = self::getConfig();
+        $values = self::getSessionUrlParamValues();
+        $parts  = [];
+
+        foreach (array_keys(self::getUrlParamsPool()) as $key) {
+            if (!empty($config['url_param_' . $key]) && ($values[$key] ?? '') !== '') {
+                $parts[] = 'var-' . rawurlencode($key) . '=' . rawurlencode($values[$key]);
+            }
+        }
+
+        return $parts ? '&' . implode('&', $parts) : '';
     }
 
     public static function getDashboards($folder_uid)

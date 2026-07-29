@@ -189,7 +189,7 @@ class Dashboard extends CommonDBTM
             $dashboardUrl = substr($dashboardUrl, strpos($dashboardUrl, '/d/'));
         }
         // The kiosk parameter hides the Grafana header/footer so only the dashboard is shown
-        $baseIframeUrl = $url . $dashboardUrl . '?kiosk';
+        $baseIframeUrl = $url . $dashboardUrl . '?kiosk' . Config::buildGrafanaUrlParams();
 
         TemplateRenderer::getInstance()->display('@grafana/dashboard.html.twig', [
             'dropdown'        => $dropdown,
