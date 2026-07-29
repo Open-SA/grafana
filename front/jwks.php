@@ -1,10 +1,14 @@
 <?php
 
-$dir = dirname(__DIR__, 3) . '/files/_plugins/grafana/keys/';
-$public_key_path = $dir . 'public_key.pem';
+include('../../../inc/includes.php');
+
+header('Content-Type: application/json');
+header('Cache-Control: no-store');
+
+$public_key_path = GLPI_PLUGIN_DOC_DIR . '/grafana/keys/public_key.pem';
 
 if (!file_exists($public_key_path)) {
-    header('HTTP/1.1 500 Internal Server Error');
+    header('HTTP/1.1 500 Internal Server Error', true, 500);
     echo json_encode(['error' => 'RSA public key not found. Please reinstall the plugin.']);
     return;
 }
@@ -15,12 +19,12 @@ $n = rtrim(strtr(base64_encode($details['rsa']['n']), '+/', '-_'), '=');
 $e = rtrim(strtr(base64_encode($details['rsa']['e']), '+/', '-_'), '=');
 
 echo json_encode([
-  'keys' => [[
-    'kty' => 'RSA',
-    'kid' => 'grafana-key-1',
-    'use' => 'sig',
-    'alg' => 'RS256',
-    'n'   => $n,
-    'e'   => $e
-  ]]
+    'keys' => [[
+        'kty' => 'RSA',
+        'kid' => 'grafana-key-1',
+        'use' => 'sig',
+        'alg' => 'RS256',
+        'n'   => $n,
+        'e'   => $e,
+    ]],
 ]);

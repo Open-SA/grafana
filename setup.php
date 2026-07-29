@@ -68,7 +68,7 @@ function plugin_init_grafana()
     Firewall::addPluginStrategyForLegacyScripts('grafana', '#^/front/jwks.php$#', Firewall::STRATEGY_NO_CHECK);
 
     // Session handling for stateless resources
-    SessionManager::registerPluginStatelessPath('grafana', '#^/front/jwks.php/#');
+    SessionManager::registerPluginStatelessPath('grafana', '#^/front/jwks\.php$#');
 
     $PLUGIN_HOOKS['csrf_compliant']['grafana'] = true;
     // don't load hooks if plugin not enabled (or glpi not logged)
