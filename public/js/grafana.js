@@ -62,6 +62,18 @@ $(function() {
       });
    });
 
+   $(document).on('click', '#toggle_password', function() {
+      var input = document.getElementById('grafanaconfig_password');
+      var icon  = document.getElementById('password_eye_icon');
+      if (input.type === 'password') {
+         input.type      = 'text';
+         icon.className  = 'ti ti-eye-off';
+      } else {
+         input.type      = 'password';
+         icon.className  = 'ti ti-eye';
+      }
+   });
+
    $(document).on('click', '#copy_clipboard', function() {
       navigator.clipboard.writeText(document.getElementById("grafana_jwks_url").textContent)
          .then(() => {

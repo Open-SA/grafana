@@ -53,10 +53,15 @@
             {# --- Password (never pre-filled) --- #}
             <div class="grafana_field">
                 <input type="password" name="fakefield" style="display:none;">
-                <input type="password" name="password"
-                       style="width:50%;"
-                       class="grafana_input form-control"
-                       id="grafanaconfig_password">
+                <div class="input-group" style="width:50%;">
+                    <input type="password" name="password"
+                           class="grafana_input form-control"
+                           id="grafanaconfig_password">
+                    <button type="button" class="btn btn-outline-secondary" id="toggle_password"
+                            title="{{ __('Show/hide password', 'grafana') }}">
+                        <i class="ti ti-eye" id="password_eye_icon"></i>
+                    </button>
+                </div>
                 <label class="grafana_label" for="grafanaconfig_password">
                     {{ __('Grafana Password', 'grafana') }}
                 </label>
