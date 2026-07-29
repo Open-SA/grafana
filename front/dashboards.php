@@ -44,14 +44,21 @@ Html::header(
 
 Session::checkRight('config', READ);
 
-$tree = [];
+$tree       = [];
+$api_errors = [];
 $grafanaConfig = new Config();
-$apiclient      = new APIClient();
+$apiclient     = new APIClient();
 if ($grafanaConfig::isValid()) {
-    $folders        = $apiclient->getFolders();
-    $all_dashboards = $apiclient->getDashboards();
+    $folders = $apiclient->getFolders();
+    if ($folders === false) {
+        $api_errors[] = $apiclient->getLastError();
+        $folders = [];
+    }
 
-    if ($all_dashboards !== false && count($all_dashboards)) {
+    $all_dashboards = $apiclient->getDashboards();
+    if ($all_dashboards === false) {
+        $api_errors[] = $apiclient->getLastError();
+    } elseif (count($all_dashboards)) {
         $folderRefs  = [];
         fixOutOfBoundsDashboards($all_dashboards, $folders);
         $folderIndex = indexFolders($folders, $all_dashboards);
@@ -60,7 +67,10 @@ if ($grafanaConfig::isValid()) {
     }
 }
 
-TemplateRenderer::getInstance()->display('@grafana/dashboards.html.twig', ['tree' => $tree]);
+TemplateRenderer::getInstance()->display('@grafana/dashboards.html.twig', [
+    'tree'       => $tree,
+    'api_errors' => $api_errors,
+]);
 
 Html::footer();
 

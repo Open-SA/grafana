@@ -6,14 +6,38 @@
  # specifications" page.
  #
  # Variables:
- #   tree  array  Normalised tree produced by fillTree() — each top-level
- #                node is either a dash-folder (with optional .subfolders
- #                and .dashboards) or a dash-db entry.
+ #   tree        array  Normalised tree produced by fillTree() — each top-level
+ #                      node is either a dash-folder (with optional .subfolders
+ #                      and .dashboards) or a dash-db entry.
+ #   api_errors  array  List of error arrays from APIClient::getLastError().
+ #                      Each entry may have: title, exception, response keys.
  # -------------------------------------------------------------------------
  #}
 
 <div class="grafana_config">
     <h1>{{ __('Reports and dashboards specifications', 'grafana') }}</h1>
+
+    {% if api_errors is not empty %}
+        {% for error in api_errors %}
+            <div class="alert alert-warning d-flex gap-2 align-items-start">
+                <i class="ti ti-alert-triangle fs-4 flex-shrink-0 mt-1"></i>
+                <div>
+                    <strong>{{ __('Grafana API error', 'grafana') }}</strong>
+                    {% if error.exception is defined %}
+                        <p class="mb-1 mt-1">{{ error.exception }}</p>
+                    {% endif %}
+                    {% if error.response is defined and error.response is not empty %}
+                        <details>
+                            <summary class="text-muted" style="cursor:pointer;font-size:.85em;">
+                                {{ __('Response preview', 'grafana') }}
+                            </summary>
+                            <pre class="mt-1 mb-0 p-2" style="font-size:.8em;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto;">{{ error.response }}</pre>
+                        </details>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
 
     {% if tree is not empty %}
         <h3>{{ __('Listing:', 'grafana') }}</h3>
@@ -22,7 +46,7 @@
                 {% include '@grafana/partials/tree_node.html.twig' with {node: node} only %}
             {% endfor %}
         </ul>
-    {% else %}
+    {% elseif api_errors is empty %}
         <p>{{ __('Unable to access dashboards data. Please check plugin configuration.', 'grafana') }}</p>
     {% endif %}
 </div>
