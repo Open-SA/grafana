@@ -25,56 +25,55 @@
 
             {# --- Grafana URL --- #}
             <div class="grafana_field">
+                <label class="grafana_label" for="grafanaconfig_url">
+                    {{ __('Grafana URL', 'grafana') }}
+                </label>
                 <input type="text" name="url"
                        value="{{ current_config.url }}"
                        placeholder="https://grafana.domain"
                        required
-                       style="width:50%;"
-                       class="grafana_input form-control"
+                       class="form-control grafana_control"
                        id="grafanaconfig_url">
-                <label class="grafana_label" for="grafanaconfig_url">
-                    {{ __('Grafana URL', 'grafana') }}
-                </label>
             </div>
 
             {# --- Username --- #}
             <div class="grafana_field">
-                <input type="text" name="username"
-                       value="{{ current_config.username }}"
-                       required
-                       style="width:50%;"
-                       class="grafana_input form-control"
-                       id="grafanaconfig_username">
                 <label class="grafana_label" for="grafanaconfig_username">
                     {{ __('Grafana Username', 'grafana') }}
                 </label>
+                <input type="text" name="username"
+                       value="{{ current_config.username }}"
+                       required
+                       class="form-control grafana_control"
+                       id="grafanaconfig_username">
             </div>
 
             {# --- Password (never pre-filled) --- #}
             <div class="grafana_field">
+                <label class="grafana_label" for="grafanaconfig_password">
+                    {{ __('Grafana Password', 'grafana') }}
+                </label>
                 <input type="password" name="fakefield" style="display:none;">
-                <div class="input-group" style="width:50%;">
+                <div class="input-group grafana_control">
                     <input type="password" name="password"
-                           class="grafana_input form-control"
+                           class="form-control"
                            id="grafanaconfig_password">
                     <button type="button" class="btn btn-outline-secondary" id="toggle_password"
                             title="{{ __('Show/hide password', 'grafana') }}">
                         <i class="ti ti-eye" id="password_eye_icon"></i>
                     </button>
                 </div>
-                <label class="grafana_label" for="grafanaconfig_password">
-                    {{ __('Grafana Password', 'grafana') }}
-                </label>
             </div>
 
-            {# --- JWKS URL (read-only paragraph with copy button) --- #}
+            {# --- JWKS URL (read-only with copy button) --- #}
             <div class="grafana_field">
-                <div class="grafana_paragraph">
-                    <label class="grafana_label_paragraph" for="grafana_jwks_url">
-                        {{ __('JWKS url', 'grafana') }}
-                    </label>
-                    <p id="grafana_jwks_url">{{ jwks_url }}</p>
-                    <button id="copy_clipboard" type="button" class="btn btn-secondary">
+                <label class="grafana_label" for="grafana_jwks_url">
+                    {{ __('JWKS url', 'grafana') }}
+                </label>
+                <div class="input-group grafana_control">
+                    <input type="text" class="form-control" id="grafana_jwks_url"
+                           value="{{ jwks_url }}" readonly>
+                    <button id="copy_clipboard" type="button" class="btn btn-outline-secondary">
                         <i id="button_icon" class="ti ti-clipboard"></i>
                         <span id="button_text">{{ __('Copy', 'grafana') }}</span>
                     </button>
@@ -83,17 +82,19 @@
 
             {# --- Light mode checkbox --- #}
             <div class="grafana_field">
-                <input type="hidden" name="lightmode" value="0">
-                <input type="checkbox" class="form-check-input"
-                       name="lightmode"
-                       id="grafana_lightmode"
-                       {{ current_config.lightmode ? 'checked' : '' }}>
-                <label class="grafana_label" for="grafana_lightmode">
-                    {{ __('Grafana light mode theme', 'grafana') }}
-                </label>
+                <div class="form-check">
+                    <input type="hidden" name="lightmode" value="0">
+                    <input type="checkbox" class="form-check-input"
+                           name="lightmode"
+                           id="grafana_lightmode"
+                           {{ current_config.lightmode ? 'checked' : '' }}>
+                    <label class="form-check-label" for="grafana_lightmode">
+                        {{ __('Grafana light mode theme', 'grafana') }}
+                    </label>
+                </div>
             </div>
 
-            {# Hidden inputs used by the copy-to-clipboard JS in grafana.js #}
+            {# Hidden inputs for clipboard JS translations #}
             <input type="hidden" name="copy"   id="translated_copy"   value="{{ __('Copy', 'grafana') }}">
             <input type="hidden" name="copied" id="translated_copied" value="{{ __('Copied!', 'grafana') }}">
 
