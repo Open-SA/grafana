@@ -29,7 +29,7 @@
  */
 
 use Config as GlpiConfig;
-use GlpiPlugin\Grafana\Profileright;
+use GlpiPlugin\Grafana\DashboardRight;
 
 /**
  * Plugin install process
@@ -48,20 +48,32 @@ function plugin_grafana_install()
     $default_collation = DBConnection::getDefaultCollation();
     $default_key_sign = DBConnection::getDefaultPrimaryKeySignOption();
 
-    $table = Profileright::getTable();
+    $newTable = DashboardRight::getTable();
+    $oldTable = 'glpi_plugin_grafana_profilrights';
 
-    if (!$DB->tableExists($table)) {
-        $migration->displayMessage("Installing $table");
+    if (!$DB->tableExists($newTable)) {
+        $migration->displayMessage("Installing $newTable");
 
-        $query = "CREATE TABLE IF NOT EXISTS `$table` (
+        $query = "CREATE TABLE IF NOT EXISTS `$newTable` (
                      `id` int {$default_key_sign} NOT NULL AUTO_INCREMENT,
-                     `profiles_id` int {$default_key_sign} NOT NULL,
                      `dashboard_uuid` varchar(200) NOT NULL,
-                     `rights` int NOT NULL,
+                     `actor_type` varchar(20) NOT NULL,
+                     `actor_id` int {$default_key_sign} NOT NULL,
                      PRIMARY KEY (`id`),
-                     UNIQUE `profiles_id_dashboard_uuid` (`profiles_id`, `dashboard_uuid`)
+                     UNIQUE KEY `dashboard_uuid_actor` (`dashboard_uuid`, `actor_type`, `actor_id`)
                   ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=DYNAMIC;";
         $DB->doQuery($query);
+
+        if ($DB->tableExists($oldTable)) {
+            $migration->displayMessage("Migrating profile rights from $oldTable to $newTable");
+            $DB->doQuery("
+                INSERT IGNORE INTO `$newTable` (`dashboard_uuid`, `actor_type`, `actor_id`)
+                SELECT `dashboard_uuid`, 'Profile', `profiles_id`
+                FROM `$oldTable`
+                WHERE (`rights` & 1) > 0
+            ");
+            $DB->doQuery("DROP TABLE `$oldTable`");
+        }
     }
 
     $migration->executeMigration();
@@ -129,7 +141,8 @@ function plugin_grafana_uninstall()
     $config = new GlpiConfig();
     $config->deleteByCriteria(['context' => 'plugin:grafana']);
 
-    $DB->doQuery('DROP TABLE IF EXISTS `' . Profileright::getTable() . '`');
+    $DB->doQuery('DROP TABLE IF EXISTS `' . DashboardRight::getTable() . '`');
+    $DB->doQuery('DROP TABLE IF EXISTS `glpi_plugin_grafana_profilrights`');
 
 
     return true;

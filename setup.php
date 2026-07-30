@@ -37,13 +37,12 @@
 use Glpi\Plugin\Hooks;
 use GlpiPlugin\Grafana\Config;
 use GlpiPlugin\Grafana\Dashboard;
-use GlpiPlugin\Grafana\Profileright;
 use Glpi\Http\Firewall;
 use Glpi\Http\SessionManager;
 
 require_once __DIR__ . '/src/Config.php';
 
-define('PLUGIN_GRAFANA_VERSION', '1.1.0');
+define('PLUGIN_GRAFANA_VERSION', '1.2.0');
 
 // Minimal GLPI version, inclusive
 define('PLUGIN_GRAFANA_MIN_GLPI', '10.0.0');
@@ -86,13 +85,10 @@ function plugin_init_grafana()
 
     // config page
     Plugin::registerClass(Config::class, ['addtabon' => 'Config']);
-    $PLUGIN_HOOKS['config_page']['grafana'] = 'front/config.form.php';
+    $PLUGIN_HOOKS['config_page']['grafana'] = 'front/config.php';
 
     // add dashboards
     Plugin::registerClass(Dashboard::class, ['addtabon' => 'Central']);
-
-    // profile rights management
-    Plugin::registerClass(Profileright::class, ['addtabon' => 'Profile']);
 
     // Encryption
     $PLUGIN_HOOKS['secured_configs']['grafana'] = ['password'];

@@ -121,6 +121,7 @@ class Config extends CommonDBTM
             'api_status'      => $api_status,
             'last_error'      => $last_error,
             'dashboards_url'  => Plugin::getWebDir('grafana') . '/front/dashboards.php',
+            'rights_url'      => Plugin::getWebDir('grafana') . '/front/rights.php',
             'url_params_pool' => self::getUrlParamsPool(),
         ]);
 

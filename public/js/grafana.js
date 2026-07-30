@@ -62,6 +62,18 @@ $(function() {
       });
    });
 
+   $(document).on('change', '.grafana-actor-type', function() {
+      var type    = $(this).val();
+      var targetId = '#' + $(this).data('target');
+      var ajaxUrl  = $(this).data('ajax-url');
+
+      $(targetId).html('');
+      if (!type) {
+         return;
+      }
+      $(targetId).load(ajaxUrl, { type: type });
+   });
+
    $(document).on('click', '#toggle_password', function() {
       var input = document.getElementById('grafanaconfig_password');
       var icon  = document.getElementById('password_eye_icon');

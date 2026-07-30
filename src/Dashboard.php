@@ -39,9 +39,10 @@ namespace GlpiPlugin\Grafana;
 require_once GLPI_ROOT . '/plugins/grafana/vendor/autoload.php';
 use CommonDBTM;
 use CommonGLPI;
-use GlpiPlugin\Grafana\Profileright;
+use GlpiPlugin\Grafana\DashboardRight;
 use GlpiPlugin\Grafana\APIClient;
 use Central;
+use Session;
 use Dropdown;
 use DateTimeImmutable;
 use Glpi\Application\View\TemplateRenderer;
@@ -70,7 +71,7 @@ class Dashboard extends CommonDBTM
     {
         switch ($item->getType()) {
             case 'Central':
-                if (Profileright::canProfileViewDashboards($_SESSION['glpiactiveprofile']['id'])) {
+                if (DashboardRight::canUserViewDashboards((int) Session::getLoginUserID())) {
                     return self::createTabEntry(self::getTypeName());
                 }
 
@@ -88,7 +89,7 @@ class Dashboard extends CommonDBTM
     {
         switch (get_class($item)) {
             case Central::class:
-                if (Profileright::canProfileViewDashboards($_SESSION['glpiactiveprofile']['id'])) {
+                if (DashboardRight::canUserViewDashboards((int) Session::getLoginUserID())) {
                     self::showForCentral($item, $withtemplate);
                 }
 
@@ -116,13 +117,11 @@ class Dashboard extends CommonDBTM
 
         $dashboards = $apiclient->getDashboards();
         if (is_array($dashboards)) {
+            $userId     = (int) Session::getLoginUserID();
             $dashboards = array_filter(
                 $dashboards,
-                function ($dashboard) {
-                    return Profileright::canProfileViewDashboard(
-                        $_SESSION['glpiactiveprofile']['id'],
-                        $dashboard['uid'],
-                    );
+                function ($dashboard) use ($userId) {
+                    return DashboardRight::canUserViewDashboard($userId, $dashboard['uid']);
                 },
             );
         }
@@ -132,8 +131,8 @@ class Dashboard extends CommonDBTM
         }
 
         $validIds = array_column($dashboards, 'id');
-        if ($requestedUuid !== null && in_array($requestedUuid, $validIds, true)) {
-            $currentUuid = $requestedUuid;
+        if ($requestedUuid !== null && in_array((int) $requestedUuid, $validIds, true)) {
+            $currentUuid = (int) $requestedUuid;
         } else {
             $currentUuid = current($dashboards)['id'];
         }
