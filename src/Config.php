@@ -71,7 +71,7 @@ class Config extends CommonDBTM
     {
         switch ($item->getType()) {
             case 'Config':
-                return self::createTabEntry(self::getTypeName());
+                return self::createTabEntry(self::getTypeName(), 0, -1, 'ti ti-chart-infographic');
         }
 
         return '';

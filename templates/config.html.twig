@@ -16,7 +16,13 @@
  #}
 
 <div class="grafana_config">
-    <h1>{{ __('Grafana plugin configuration', 'grafana') }}</h1>
+    <div class="d-flex align-items-center mb-3 gap-3">
+        <h1 class="mb-0 flex-grow-1">{{ __('Grafana plugin configuration', 'grafana') }}</h1>
+        <a href="{{ rights_url }}" class="btn btn-outline-secondary btn-md flex-shrink-0">
+            <i class="ti ti-shield-lock"></i>
+            {{ __('Manage dashboard permissions', 'grafana') }}
+        </a>
+    </div>
 
     <form name="form" action="{{ form_url }}" method="post">
         <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
@@ -178,10 +184,6 @@
                 <a href="{{ dashboards_url }}" class="btn btn-outline-secondary">
                     <i class="ti ti-chart-infographic"></i>
                     <span>{{ __('Show reports and dashboards specifications', 'grafana') }}</span>
-                </a>
-                <a href="{{ rights_url }}" class="btn btn-outline-secondary">
-                    <i class="ti ti-shield-lock"></i>
-                    <span>{{ __('Manage dashboard permissions', 'grafana') }}</span>
                 </a>
             </div>
         </div>

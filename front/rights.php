@@ -96,9 +96,10 @@ if ($dashboards === false) {
 } elseif (is_array($dashboards)) {
     foreach ($dashboards as $dashboard) {
         $dashboardData[] = [
-            'uuid'   => $dashboard['uid'],
-            'title'  => $dashboard['title'],
-            'grants' => DashboardRight::getGrantsForDashboard($dashboard['uid']),
+            'uuid'         => $dashboard['uid'],
+            'title'        => $dashboard['title'],
+            'folder_title' => $dashboard['folderTitle'] ?? '',
+            'grants'       => DashboardRight::getGrantsForDashboard($dashboard['uid']),
         ];
     }
 }

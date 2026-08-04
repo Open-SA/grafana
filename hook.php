@@ -93,16 +93,19 @@ function plugin_grafana_install()
 
     $migration->executeMigration();
 
-    // fill config table with default values if missing
+    // Only insert missing keys — setConfigurationValues does an upsert, so we
+    // must guard existing values to avoid wiping the config on upgrade.
+    $existing = GlpiConfig::getConfigurationValues('plugin:grafana');
     foreach (
         [
-            // api access
-            'url'           => '',
-            'token'       => '',
-            'username'      => '',
-        ] as $key => $value
+            'url'      => '',
+            'token'    => '',
+            'username' => '',
+        ] as $key => $default
     ) {
-        GlpiConfig::setConfigurationValues('plugin:grafana', [$key => $value]);
+        if (!array_key_exists($key, $existing)) {
+            GlpiConfig::setConfigurationValues('plugin:grafana', [$key => $default]);
+        }
     }
 
     $keysDir = GLPI_PLUGIN_DOC_DIR . '/grafana/keys';

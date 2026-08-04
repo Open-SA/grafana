@@ -142,9 +142,15 @@
         {% for dashboard in dashboards %}
             <div class="card mb-4">
                 <div class="card-header d-flex align-items-center gap-2">
-                    <i class="ti ti-chart-infographic"></i>
-                    <strong>{{ dashboard.title }}</strong>
-                    <code class="ms-1 text-muted" style="font-size:.8em;">{{ dashboard.uuid }}</code>
+                    <i class="ti ti-chart-infographic flex-shrink-0"></i>
+                    <span class="flex-grow-1 min-w-0">
+                        {% if dashboard.folder_title %}
+                            <span class="text-muted">{{ dashboard.folder_title }}</span>
+                            <span class="text-muted mx-1">/</span>
+                        {% endif %}
+                        <strong>{{ dashboard.title }}</strong>
+                    </span>
+                    <code class="ms-auto text-muted flex-shrink-0" style="font-size:.8em;">{{ dashboard.uuid }}</code>
                 </div>
                 <div class="card-body">
 
