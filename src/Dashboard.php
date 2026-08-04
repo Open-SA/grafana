@@ -72,7 +72,7 @@ class Dashboard extends CommonDBTM
         switch ($item->getType()) {
             case 'Central':
                 if (DashboardRight::canUserViewDashboards((int) Session::getLoginUserID())) {
-                    return self::createTabEntry(self::getTypeName());
+                    return self::createTabEntry(self::getTypeName(), 0, -1, 'ti ti-chart-infographic');
                 }
 
                 break;
