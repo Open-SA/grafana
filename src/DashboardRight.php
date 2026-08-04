@@ -195,6 +195,129 @@ class DashboardRight extends CommonDBTM
         return $right->delete(['id' => $id]);
     }
 
+    // ── Default tab actors ────────────────────────────────────────────────
+
+    public static function getDefaultTabTable(): string
+    {
+        return 'glpi_plugin_grafana_defaulttabs';
+    }
+
+    /**
+     * Whether the given user matches any default-tab actor grant.
+     */
+    public static function isDefaultTabForUser(int $userId): bool
+    {
+        /** @var \DBmysql $DB */
+        global $DB;
+
+        if (!$DB->tableExists(self::getDefaultTabTable())) {
+            return false;
+        }
+
+        $orConditions = self::buildOrConditions($userId);
+        if (empty($orConditions)) {
+            return false;
+        }
+
+        $iterator = $DB->request([
+            'FROM'  => self::getDefaultTabTable(),
+            'WHERE' => ['OR' => $orConditions],
+            'LIMIT' => 1,
+        ]);
+
+        return count($iterator) > 0;
+    }
+
+    /**
+     * All default-tab actor grants with resolved names.
+     *
+     * @return array<int, array{id: int, actor_type: string, actor_id: int, actor_name: string}>
+     */
+    public static function getDefaultTabActors(): array
+    {
+        /** @var \DBmysql $DB */
+        global $DB;
+
+        if (!$DB->tableExists(self::getDefaultTabTable())) {
+            return [];
+        }
+
+        $iterator = $DB->request([
+            'FROM'  => self::getDefaultTabTable(),
+            'ORDER' => 'actor_type ASC',
+        ]);
+
+        $byType = ['Profile' => [], 'User' => [], 'Group' => [], 'Entity' => []];
+        $rows   = [];
+
+        foreach ($iterator as $row) {
+            $rows[]                                       = $row;
+            $byType[$row['actor_type']][$row['actor_id']] = true;
+        }
+
+        $tableMap = [
+            'Profile' => 'glpi_profiles',
+            'User'    => 'glpi_users',
+            'Group'   => 'glpi_groups',
+            'Entity'  => 'glpi_entities',
+        ];
+
+        $names = [];
+        foreach ($tableMap as $type => $table) {
+            $ids = array_keys($byType[$type]);
+            if (empty($ids)) {
+                continue;
+            }
+            $nameIter = $DB->request([
+                'SELECT' => ['id', 'name'],
+                'FROM'   => $table,
+                'WHERE'  => ['id' => $ids],
+            ]);
+            foreach ($nameIter as $nameRow) {
+                $names[$type][$nameRow['id']] = $nameRow['name'];
+            }
+        }
+
+        $actors = [];
+        foreach ($rows as $row) {
+            $actors[] = [
+                'id'         => (int) $row['id'],
+                'actor_type' => $row['actor_type'],
+                'actor_id'   => (int) $row['actor_id'],
+                'actor_name' => $names[$row['actor_type']][$row['actor_id']] ?? '?',
+            ];
+        }
+
+        return $actors;
+    }
+
+    /**
+     * Add an actor to the default-tab list.
+     */
+    public static function addDefaultTabActor(string $actorType, int $actorId): bool
+    {
+        /** @var \DBmysql $DB */
+        global $DB;
+
+        return $DB->insert(self::getDefaultTabTable(), [
+            'actor_type' => $actorType,
+            'actor_id'   => $actorId,
+        ]);
+    }
+
+    /**
+     * Remove an actor from the default-tab list by row ID.
+     */
+    public static function removeDefaultTabActor(int $id): bool
+    {
+        /** @var \DBmysql $DB */
+        global $DB;
+
+        return $DB->delete(self::getDefaultTabTable(), ['id' => $id]);
+    }
+
+    // ── Internal helpers ─────────────────────────────────────────────────
+
     /**
      * Build OR conditions array for the current user session.
      * Groups are read from session to avoid a subquery.

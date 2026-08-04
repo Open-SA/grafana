@@ -42,6 +42,24 @@ if (!empty($_POST['delete_grant'])) {
     Html::back();
 }
 
+if (!empty($_POST['add_default_tab'])) {
+    $actorType = $_POST['actor_type'] ?? '';
+    $actorId   = (int) ($_POST['actor_id'] ?? 0);
+
+    if (in_array($actorType, ['Profile', 'User', 'Group', 'Entity'], true) && $actorId > 0) {
+        DashboardRight::addDefaultTabActor($actorType, $actorId);
+    }
+    Html::back();
+}
+
+if (!empty($_POST['delete_default_tab'])) {
+    $actorId = (int) ($_POST['default_tab_id'] ?? 0);
+    if ($actorId > 0) {
+        DashboardRight::removeDefaultTabActor($actorId);
+    }
+    Html::back();
+}
+
 Html::header(
     __('Grafana dashboard permissions', 'grafana'),
     $_SERVER['PHP_SELF'],
@@ -67,11 +85,12 @@ if (is_array($dashboards)) {
 $configUrl = Toolbox::getItemTypeFormURL('Config') . '?forcetab=' . urlencode('GlpiPlugin\Grafana\Config$1');
 
 TemplateRenderer::getInstance()->display('@grafana/rights.html.twig', [
-    'dashboards'  => $dashboardData,
-    'actor_types' => DashboardRight::getActorTypes(),
-    'form_url'    => Plugin::getWebDir('grafana') . '/front/rights.php',
-    'ajax_url'    => Plugin::getWebDir('grafana') . '/ajax/rights.php',
-    'config_url'  => $configUrl,
+    'dashboards'          => $dashboardData,
+    'actor_types'         => DashboardRight::getActorTypes(),
+    'default_tab_actors'  => DashboardRight::getDefaultTabActors(),
+    'form_url'            => Plugin::getWebDir('grafana') . '/front/rights.php',
+    'ajax_url'            => Plugin::getWebDir('grafana') . '/ajax/rights.php',
+    'config_url'          => $configUrl,
 ]);
 
 Html::footer();

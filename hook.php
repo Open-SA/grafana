@@ -76,6 +76,21 @@ function plugin_grafana_install()
         }
     }
 
+    // Default tab actors table — added in 1.3.0, runs on upgrade too
+    $defaultTabTable = 'glpi_plugin_grafana_defaulttabs';
+    if (!$DB->tableExists($defaultTabTable)) {
+        $migration->displayMessage("Installing $defaultTabTable");
+
+        $query = "CREATE TABLE IF NOT EXISTS `$defaultTabTable` (
+                     `id` int {$default_key_sign} NOT NULL AUTO_INCREMENT,
+                     `actor_type` varchar(20) NOT NULL,
+                     `actor_id` int {$default_key_sign} NOT NULL,
+                     PRIMARY KEY (`id`),
+                     UNIQUE KEY `actor_type_actor_id` (`actor_type`, `actor_id`)
+                  ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=DYNAMIC;";
+        $DB->doQuery($query);
+    }
+
     $migration->executeMigration();
 
     // fill config table with default values if missing
@@ -142,6 +157,7 @@ function plugin_grafana_uninstall()
     $config->deleteByCriteria(['context' => 'plugin:grafana']);
 
     $DB->doQuery('DROP TABLE IF EXISTS `' . DashboardRight::getTable() . '`');
+    $DB->doQuery('DROP TABLE IF EXISTS `glpi_plugin_grafana_defaulttabs`');
     $DB->doQuery('DROP TABLE IF EXISTS `glpi_plugin_grafana_profilrights`');
 
 

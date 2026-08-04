@@ -34,15 +34,15 @@
  * - Changed initialization logic to register hooks that it will use
  */
 
-use Glpi\Plugin\Hooks;
 use GlpiPlugin\Grafana\Config;
 use GlpiPlugin\Grafana\Dashboard;
+use GlpiPlugin\Grafana\DashboardRight;
 use Glpi\Http\Firewall;
 use Glpi\Http\SessionManager;
 
 require_once __DIR__ . '/src/Config.php';
 
-define('PLUGIN_GRAFANA_VERSION', '1.2.0');
+define('PLUGIN_GRAFANA_VERSION', '1.3.0');
 
 // Minimal GLPI version, inclusive
 define('PLUGIN_GRAFANA_MIN_GLPI', '10.0.0');
@@ -92,6 +92,9 @@ function plugin_init_grafana()
 
     // Encryption
     $PLUGIN_HOOKS['secured_configs']['grafana'] = ['password'];
+
+    // Default central tab — applied once per login session
+    $PLUGIN_HOOKS['post_init']['grafana'] = 'plugin_grafana_post_init';
 }
 
 
@@ -119,6 +122,25 @@ function plugin_version_grafana()
             ]
         ],
     ];
+}
+
+/**
+ * Called by GLPI on every page load after full session init.
+ * Sets the Grafana tab as the active Central tab for users who match
+ * a default-tab actor grant, but only once per login session so that
+ * manual tab switches are not overridden on the next page load.
+ */
+function plugin_grafana_post_init(): void
+{
+    if (!Session::getLoginUserID() || isset($_SESSION['glpi_grafana_default_tab_set'])) {
+        return;
+    }
+
+    $_SESSION['glpi_grafana_default_tab_set'] = true;
+
+    if (DashboardRight::isDefaultTabForUser((int) Session::getLoginUserID())) {
+        Session::setActiveTab('central', 'GlpiPlugin\Grafana\Dashboard$1');
+    }
 }
 
 function plugin_grafana_recursive_remove_empty($haystack)
