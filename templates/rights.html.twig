@@ -5,13 +5,14 @@
  # Dashboard permissions management page.
  #
  # Variables:
- #   dashboards          array   Each entry: {uuid, title, grants[]}
- #                               Grant entry: {id, actor_type, actor_id, actor_name}
- #   actor_types         array   key => translated label (Profile/User/Group/Entity)
- #   default_tab_actors  array   Each entry: {id, actor_type, actor_id, actor_name}
- #   form_url            string  POST target (front/rights.php)
- #   ajax_url            string  AJAX endpoint (ajax/rights.php)
- #   config_url          string  URL back to the plugin config tab
+ #   dashboards          array        Each entry: {uuid, title, grants[]}
+ #                                    Grant entry: {id, actor_type, actor_id, actor_name}
+ #   api_error           array|null   Error from APIClient::getLastError() or null
+ #   actor_types         array        key => translated label (Profile/User/Group/Entity)
+ #   default_tab_actors  array        Each entry: {id, actor_type, actor_id, actor_name}
+ #   form_url            string       POST target (front/rights.php)
+ #   ajax_url            string       AJAX endpoint (ajax/rights.php)
+ #   config_url          string       URL back to the plugin config tab
  # -------------------------------------------------------------------------
  #}
 
@@ -28,6 +29,26 @@
     <p class="text-muted mb-4" style="font-size:.9em;">
         {{ __('A dashboard is visible only to users that match at least one grant below. A dashboard with no grants is hidden from everyone.', 'grafana') }}
     </p>
+
+    {% if api_error %}
+        <div class="alert alert-warning d-flex gap-2 align-items-start mb-4">
+            <i class="ti ti-alert-triangle fs-4 flex-shrink-0 mt-1"></i>
+            <div>
+                <strong>{{ __('Grafana API error — dashboard list could not be loaded', 'grafana') }}</strong>
+                {% if api_error.exception is defined %}
+                    <p class="mb-1 mt-1">{{ api_error.exception }}</p>
+                {% endif %}
+                {% if api_error.response is defined and api_error.response is not empty %}
+                    <details>
+                        <summary class="text-muted" style="cursor:pointer;font-size:.85em;">
+                            {{ __('Response preview', 'grafana') }}
+                        </summary>
+                        <pre class="mt-1 mb-0 p-2" style="font-size:.8em;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto;">{{ api_error.response }}</pre>
+                    </details>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
 
     {# ── Default central tab ────────────────────────────────────────────── #}
     <div class="card mb-4">

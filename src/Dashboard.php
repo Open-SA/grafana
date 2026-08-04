@@ -116,7 +116,11 @@ class Dashboard extends CommonDBTM
         $requestedUuid = isset($_GET['uuid']) ? $_GET['uuid'] : null;
 
         $dashboards = $apiclient->getDashboards();
-        if (is_array($dashboards)) {
+        $apiError   = null;
+        if ($dashboards === false) {
+            $apiError   = $apiclient->getLastError();
+            $dashboards = [];
+        } elseif (is_array($dashboards)) {
             $userId     = (int) Session::getLoginUserID();
             $dashboards = array_filter(
                 $dashboards,
@@ -124,6 +128,15 @@ class Dashboard extends CommonDBTM
                     return DashboardRight::canUserViewDashboard($userId, $dashboard['uid']);
                 },
             );
+        }
+
+        if ($apiError !== null) {
+            TemplateRenderer::getInstance()->display('@grafana/dashboard.html.twig', [
+                'api_error'    => $apiError,
+                'dropdown'     => '',
+                'keys_missing' => false,
+            ]);
+            return;
         }
 
         if (empty($dashboards)) {

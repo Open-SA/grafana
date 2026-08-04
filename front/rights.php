@@ -68,11 +68,14 @@ Html::header(
     'grafana_rights',
 );
 
-$apiclient  = new APIClient();
-$dashboards = $apiclient->getDashboards();
-
+$apiclient     = new APIClient();
+$dashboards    = $apiclient->getDashboards();
+$apiError      = null;
 $dashboardData = [];
-if (is_array($dashboards)) {
+
+if ($dashboards === false) {
+    $apiError = $apiclient->getLastError();
+} elseif (is_array($dashboards)) {
     foreach ($dashboards as $dashboard) {
         $dashboardData[] = [
             'uuid'   => $dashboard['uid'],
@@ -86,6 +89,7 @@ $configUrl = Toolbox::getItemTypeFormURL('Config') . '?forcetab=' . urlencode('G
 
 TemplateRenderer::getInstance()->display('@grafana/rights.html.twig', [
     'dashboards'          => $dashboardData,
+    'api_error'           => $apiError,
     'actor_types'         => DashboardRight::getActorTypes(),
     'default_tab_actors'  => DashboardRight::getDefaultTabActors(),
     'form_url'            => Plugin::getWebDir('grafana') . '/front/rights.php',

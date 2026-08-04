@@ -7,6 +7,8 @@
  #
  # Variables:
  #   dropdown        string  Raw HTML of the dashboard selector dropdown
+ #   api_error       array   Error from APIClient::getLastError() — when set,
+ #                           shows the error and skips the iframe block
  #   keys_missing    bool    True when RSA keys are absent — shows a warning
  #                           and skips the iframe block
  #   iframe_src      string  Initial full iframe URL (base URL + ?kiosk + &auth_token=…)
@@ -18,7 +20,25 @@
 
 {{ dropdown|raw }}
 
-{% if keys_missing %}
+{% if api_error is defined and api_error %}
+    <div class="alert alert-warning d-flex gap-2 align-items-start">
+        <i class="ti ti-alert-triangle fs-4 flex-shrink-0 mt-1"></i>
+        <div>
+            <strong>{{ __('Grafana API error', 'grafana') }}</strong>
+            {% if api_error.exception is defined %}
+                <p class="mb-1 mt-1">{{ api_error.exception }}</p>
+            {% endif %}
+            {% if api_error.response is defined and api_error.response is not empty %}
+                <details>
+                    <summary class="text-muted" style="cursor:pointer;font-size:.85em;">
+                        {{ __('Response preview', 'grafana') }}
+                    </summary>
+                    <pre class="mt-1 mb-0 p-2" style="font-size:.8em;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto;">{{ api_error.response }}</pre>
+                </details>
+            {% endif %}
+        </div>
+    </div>
+{% elseif keys_missing %}
     <div class="alert alert-warning">
         {{ __('Grafana plugin: RSA keys not found. Please reinstall the plugin.', 'grafana') }}
     </div>
