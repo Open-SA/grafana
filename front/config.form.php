@@ -80,7 +80,7 @@ if (isset($_REQUEST["empty_button"])) {
         $mode = $_POST['lightmode'] == "on" ? "light" : "dark";
 
         $apiclient = new APIClient();
-        $apiclient->httpQuery(
+        $themeResult = $apiclient->httpQuery(
             'user/preferences',
             [
                 'json' => [
@@ -90,6 +90,15 @@ if (isset($_REQUEST["empty_button"])) {
             'PUT'
         );
 
+        if ($themeResult === false) {
+            $err = $apiclient->getLastError();
+            $errMsg = $err['exception'] ?? __('Unknown error', 'grafana');
+            Session::addMessageAfterRedirect(
+                sprintf(__('Configuration saved, but Grafana theme sync failed: %s', 'grafana'), $errMsg),
+                false,
+                WARNING
+            );
+        }
 
         Html::displayMessageAfterRedirect(__('Configuration saved successfully'), true);
         Html::redirect(Toolbox::getItemTypeFormURL('Config'));

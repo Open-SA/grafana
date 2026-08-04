@@ -89,7 +89,7 @@ if (isset($_REQUEST['update'])) {
     $profiles_id = (int) $_REQUEST['profiles_id'];
     $rights_to_all = (int) $_REQUEST['set_rights_to_all'];
     $viewableDashboardsUuids = [];
-    foreach ($apiclient->getDashboards() as $dashboard) {
+    foreach (is_array($apiDashboards = $apiclient->getDashboards()) ? $apiDashboards : [] as $dashboard) {
         Profileright::setDashboardRightsForProfile(
             $profiles_id,
             $dashboard['uid'],
