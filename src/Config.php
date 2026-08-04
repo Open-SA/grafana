@@ -142,7 +142,6 @@ class Config extends CommonDBTM
         $valid_api = true;
         if ($with_api) {
             $apiclient = new APIClient();
-            $apiclient->connect();
             $valid_api = !in_array(false, $apiclient->status());
         }
 
@@ -243,16 +242,17 @@ class Config extends CommonDBTM
         return $parts ? '&' . implode('&', $parts) : '';
     }
 
-    public static function getDashboards($folder_uid)
-    {
-        $api = new APIClient();
-        $dashs = $api->getDashboards($folder_uid);
-    }
-
     public static function displayDashboardJson($dashboard_id)
     {
         $apiclient = new APIClient();
         $dashboard = $apiclient->getDashboard($dashboard_id);
+        if ($dashboard === false) {
+            $err = $apiclient->getLastError();
+            echo '<div class="alert alert-warning">'
+                . htmlescape(__('Grafana API error', 'grafana') . ': ' . ($err['exception'] ?? __('Unknown error', 'grafana')))
+                . '</div>';
+            return;
+        }
         self::displayPrettyJson($dashboard);
         Html::printCleanArray($dashboard);
     }

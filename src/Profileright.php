@@ -112,7 +112,7 @@ class Profileright extends Profile
         $apiclient  = new APIClient();
         $dashboards = $apiclient->getDashboards();
         $rows = [];
-        foreach ($dashboards as $dashboard) {
+        foreach (is_array($dashboards) ? $dashboards : [] as $dashboard) {
             ob_start();
             Profile::dropdownRight(
                 sprintf('dashboard[%s]', $dashboard['uid']),
