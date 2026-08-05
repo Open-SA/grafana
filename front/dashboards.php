@@ -72,9 +72,6 @@ TemplateRenderer::getInstance()->display('@grafana/dashboards.html.twig', [
     'api_errors' => $api_errors,
 ]);
 
-echo Html::css("public/lib/prismjs.css");
-echo Html::script("public/lib/prismjs.js");
-
 Html::footer();
 
 function fixOutOfBoundsDashboards(&$all_dashboards, $folders)

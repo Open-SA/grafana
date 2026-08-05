@@ -7,8 +7,18 @@
  # Variables:
  #   api_error    array|null   Error from APIClient::getLastError(), or null
  #   json_pretty  string       Pretty-printed JSON string (empty on error)
+ #   dashboard    array|null   Raw dashboard data from Grafana API, or null on error
  # -------------------------------------------------------------------------
  #}
+
+{% macro scalar(v) %}
+    {%- if v is same as(true) -%}<span class="badge bg-success">true</span>
+    {%- elseif v is same as(false) -%}<span class="badge bg-secondary">false</span>
+    {%- elseif v is null -%}<span class="text-muted">—</span>
+    {%- else -%}{{ v }}{%- endif -%}
+{% endmacro %}
+
+{% import _self as fmt %}
 
 {% if api_error %}
     <div class="alert alert-warning d-flex gap-2 align-items-start">
@@ -29,5 +39,43 @@
         </div>
     </div>
 {% else %}
-    <pre class="p-2 m-0" style="max-height:70vh;overflow:auto;"><code class="language-json">{{ json_pretty }}</code></pre>
+    {# ── JSON with syntax highlighting ──────────────────────────────────── #}
+    <pre id="grafana-json-output" class="grafana-json-pre">{{ json_pretty }}</pre>
+
+    {# ── Properties table ───────────────────────────────────────────────── #}
+    {% if dashboard is not empty %}
+        <table class="table table-sm table-hover table-bordered mb-0 mt-3">
+            <thead>
+                <tr>
+                    <th style="width:35%;">{{ __('Key', 'grafana') }}</th>
+                    <th>{{ __('Value', 'grafana') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key, value in dashboard %}
+                    {% if value is not iterable %}
+                        <tr>
+                            <td><code class="text-body">{{ key }}</code></td>
+                            <td>{{ fmt.scalar(value) }}</td>
+                        </tr>
+                    {% elseif value is not empty %}
+                        <tr class="table-secondary">
+                            <td colspan="2" class="py-1">
+                                <code class="text-body fw-semibold">{{ key }}</code>
+                                <span class="text-muted fw-normal ms-1" style="font-size:.8em;">({{ value|length }})</span>
+                            </td>
+                        </tr>
+                        {% for subkey, subval in value %}
+                            {% if subval is not iterable %}
+                                <tr>
+                                    <td class="ps-4 text-muted"><code>{{ subkey }}</code></td>
+                                    <td>{{ fmt.scalar(subval) }}</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
 {% endif %}
