@@ -249,7 +249,7 @@ class Config extends CommonDBTM
         if ($dashboard === false) {
             $err = $apiclient->getLastError();
             echo '<div class="alert alert-warning">'
-                . htmlescape(__('Grafana API error', 'grafana') . ': ' . ($err['exception'] ?? __('Unknown error', 'grafana')))
+                . htmlspecialchars(__('Grafana API error', 'grafana') . ': ' . ($err['exception'] ?? __('Unknown error', 'grafana')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
                 . '</div>';
             return;
         }
@@ -264,13 +264,13 @@ class Config extends CommonDBTM
         echo Html::script("lib/prism/prism.js");
 
         echo "<pre><code class='language-json'>";
-        echo htmlescape(preg_replace(
+        echo htmlspecialchars(preg_replace(
             "/(^|\G) {4}/m",
             "   ", // replace indentation from 4 to 3 spaces
             json_encode($array, JSON_PRETTY_PRINT
                 + JSON_UNESCAPED_UNICODE
                 + JSON_UNESCAPED_SLASHES)
-        ));
+        ) ?: '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         echo "</code></pre>";
     }
 }
