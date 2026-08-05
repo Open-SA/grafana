@@ -244,15 +244,17 @@ class Config extends CommonDBTM
     public static function displayDashboardJson($dashboard_id)
     {
         $apiclient = new APIClient();
-        $dashboard = $apiclient->getDashboard($dashboard_id);
+        $result    = $apiclient->getDashboard($dashboard_id);
 
-        if ($dashboard === false) {
+        if ($result === false || empty($result)) {
             TemplateRenderer::getInstance()->display('@grafana/dashboard_json.html.twig', [
                 'api_error'   => $apiclient->getLastError(),
                 'json_pretty' => '',
             ]);
             return;
         }
+
+        $dashboard = $result[0];
 
         $json = preg_replace(
             "/(^|\G) {4}/m",
