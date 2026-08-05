@@ -173,3 +173,38 @@
     color: var(--bs-body-color);
     font-size: 1em;
 }
+
+/* ── JSON inspector modal ────────────────────────────────────────────────── */
+
+.grafana-json-pre {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: .375rem;
+    padding: .75rem 1rem;
+    font-size: .82em;
+    line-height: 1.55;
+    max-height: 40vh;
+    overflow: auto;
+    margin: 0;
+    color: #212529;
+}
+
+.grafana-json-pre .gj-key    { color: #5b21b6; }
+.grafana-json-pre .gj-str    { color: #166534; }
+.grafana-json-pre .gj-num    { color: #075985; }
+.grafana-json-pre .gj-bool   { color: #92400e; font-weight: 600; }
+.grafana-json-pre .gj-null   { color: #6b7280; font-style: italic; }
+
+@media (prefers-color-scheme: dark) {
+    .grafana-json-pre .gj-key  { color: #c4b5fd; }
+    .grafana-json-pre .gj-str  { color: #86efac; }
+    .grafana-json-pre .gj-num  { color: #67e8f9; }
+    .grafana-json-pre .gj-bool { color: #fcd34d; }
+    .grafana-json-pre .gj-null { color: #9ca3af; }
+}
+
+:root[data-theme="dark"] .grafana-json-pre .gj-key  { color: #c4b5fd; }
+:root[data-theme="dark"] .grafana-json-pre .gj-str  { color: #86efac; }
+:root[data-theme="dark"] .grafana-json-pre .gj-num  { color: #67e8f9; }
+:root[data-theme="dark"] .grafana-json-pre .gj-bool { color: #fcd34d; }
+:root[data-theme="dark"] .grafana-json-pre .gj-null { color: #9ca3af; }

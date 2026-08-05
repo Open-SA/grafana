@@ -263,6 +263,7 @@ class Config extends CommonDBTM
         TemplateRenderer::getInstance()->display('@grafana/dashboard_json.html.twig', [
             'api_error'   => null,
             'json_pretty' => $json,
+            'dashboard'   => $dashboard,
         ]);
     }
 }
