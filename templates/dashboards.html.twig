@@ -40,8 +40,7 @@
     {% endif %}
 
     {% if tree is not empty %}
-        <h3>{{ __('Listing:', 'grafana') }}</h3>
-        <ul class="grafana_folder_list">
+        <ul class="grafana-tree">
             {% for node in tree %}
                 {% include '@grafana/partials/tree_node.html.twig' with {node: node} only %}
             {% endfor %}
