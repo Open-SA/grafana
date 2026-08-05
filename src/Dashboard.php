@@ -150,8 +150,7 @@ class Dashboard extends CommonDBTM
             $currentUuid = current($dashboards)['id'];
         }
 
-        ob_start();
-        Dropdown::showFromArray(
+        $dropdown = Dropdown::showFromArray(
             'current_dashboard',
             array_combine(array_column($dashboards, 'id'), array_column($dashboards, 'title')),
             [
@@ -159,9 +158,9 @@ class Dashboard extends CommonDBTM
                     ? 'location.href = location.origin+location.pathname+"?uuid="+$(this).val()'
                     : 'reloadTab("uuid=" + $(this).val());',
                 'value'     => $currentUuid,
+                'display'   => false,
             ],
         );
-        $dropdown = ob_get_clean();
 
         $private_key_path = GLPI_PLUGIN_DOC_DIR . '/grafana/keys/private_key.pem';
         $public_key_path  = GLPI_PLUGIN_DOC_DIR . '/grafana/keys/public_key.pem';
