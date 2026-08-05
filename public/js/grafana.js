@@ -64,8 +64,8 @@ $(function() {
       }
    };
 
-   $(document).on("click", ".grafana_folder_list label", function() {
-      $(this).toggleClass('expanded');
+   $(document).on("click", ".grafana-folder-toggle", function() {
+      $(this).closest('.grafana-tree-folder').toggleClass('expanded');
    });
 
    $(document).on("click", "a.extract", function() {

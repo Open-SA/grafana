@@ -100,78 +100,72 @@
     border: 0;
 }
 
-/* ── folder tree (dashboards page) ──────────────────────────────────────── */
+/* ── dashboard tree ──────────────────────────────────────────────────────── */
 
-.grafana_config ul.grafana_folder_list {
-    list-style-type: none;
-    margin-left: 10px;
-    padding-left: 10px;
+.grafana-tree,
+.grafana-tree ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
     user-select: none;
 }
 
-.grafana_config ul.grafana_folder_list label {
-    background-color: var(--bs-secondary-bg);
-    display: block;
-    padding: 10px;
-    margin-top: 2px;
-    cursor: pointer;
+.grafana-tree ul {
+    padding-left: 1.25rem;
 }
 
-.grafana_config ul.grafana_folder_list label:before {
-    content: "\f054";
-    font-family: 'FontAwesome';
-    margin-right: 4px;
-}
-
-.grafana_config ul.grafana_folder_list label.expanded:before {
-    content: "\f078";
-}
-
-.grafana_config ul.extract_list {
-    border: 2px solid var(--bs-border-color);
-}
-
-.grafana_config ul.extract_list li a {
-    color: var(--bs-body-color);
-    padding: 5px 10px;
-}
-
-.grafana_config ul.extract_list li:nth-child(odd) {
-    background-color: var(--bs-tertiary-bg);
-}
-
-.grafana_config ul.extract_list li:hover {
-    background-color: var(--bs-secondary-bg);
-}
-
-.grafana_config ul.grafana_folder_list ul.extract_list {
+.grafana-tree-folder > ul {
     display: none;
 }
 
-.grafana_config ul.grafana_folder_list label.expanded + ul.extract_list {
+.grafana-tree-folder.expanded > ul {
     display: block;
 }
 
-.grafana_config .grafana_folder_list li:has(> a) {
-    margin: 2px 0 2px 27px;
-    background-color: var(--bs-secondary-bg);
-    border: 1px solid var(--bs-border-color);
-    border-radius: 3px;
-    list-style-type: disc;
-}
-
-.grafana_config .grafana_folder_list li:hover {
-    background-color: var(--bs-tertiary-bg);
-}
-
-.grafana_config .grafana_folder_list li a {
-    display: block;
+.grafana-folder-toggle {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
     width: 100%;
-    height: 100%;
-    padding: 5px 10px;
-    text-decoration: none;
+    background: var(--bs-secondary-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: .25rem;
+    padding: .45rem .75rem;
+    margin: 2px 0;
+    cursor: pointer;
+    text-align: left;
+    font-size: .9rem;
     color: var(--bs-body-color);
-    font-size: 1em;
+}
+
+.grafana-folder-toggle:hover {
+    background: var(--bs-tertiary-bg);
+}
+
+.grafana-folder-arrow {
+    transition: transform .15s ease;
+    flex-shrink: 0;
+}
+
+.grafana-tree-folder.expanded > .grafana-folder-toggle .grafana-folder-arrow {
+    transform: rotate(90deg);
+}
+
+.grafana-dash-link {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .3rem .75rem;
+    margin: 2px 0;
+    border-radius: .25rem;
+    color: var(--bs-body-color);
+    text-decoration: none;
+    font-size: .9rem;
+}
+
+.grafana-dash-link:hover {
+    background: var(--bs-secondary-bg);
+    color: var(--bs-body-color);
 }
 
 /* ── JSON inspector modal ────────────────────────────────────────────────── */

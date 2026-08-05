@@ -7,9 +7,13 @@
  #}
 
 {% if node.type == 'dash-folder' %}
-    <li>
-        <label>{{ node.title }}</label>
-        <ul class="extract_list">
+    <li class="grafana-tree-folder">
+        <button type="button" class="grafana-folder-toggle">
+            <i class="ti ti-chevron-right grafana-folder-arrow"></i>
+            <i class="ti ti-folder"></i>
+            {{ node.title }}
+        </button>
+        <ul>
             {% for subfolder in node.subfolders ?? [] %}
                 {% include '@grafana/partials/tree_node.html.twig' with {node: subfolder} only %}
             {% endfor %}
@@ -20,8 +24,11 @@
     </li>
 {% else %}
     <li>
-        <a href="#" class="extract"
+        <a href="#" class="extract grafana-dash-link"
            data-uid="{{ node.uid }}"
-           data-type="dashboard">{{ node.title }}</a>
+           data-type="dashboard">
+            <i class="ti ti-layout-dashboard"></i>
+            {{ node.title }}
+        </a>
     </li>
 {% endif %}
