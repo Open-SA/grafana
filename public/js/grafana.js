@@ -58,6 +58,11 @@ $(function() {
          params: {
             uid: uid,
             type: type
+         },
+         done: function() {
+            if (typeof Prism !== 'undefined') {
+               Prism.highlightAll();
+            }
          }
       });
    });

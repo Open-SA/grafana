@@ -1,0 +1,33 @@
+{#
+ # -------------------------------------------------------------------------
+ # Grafana plugin for GLPI
+ # -------------------------------------------------------------------------
+ # Dashboard JSON inspector — shown in a modal from the dashboards tree page.
+ #
+ # Variables:
+ #   api_error    array|null   Error from APIClient::getLastError(), or null
+ #   json_pretty  string       Pretty-printed JSON string (empty on error)
+ # -------------------------------------------------------------------------
+ #}
+
+{% if api_error %}
+    <div class="alert alert-warning d-flex gap-2 align-items-start">
+        <i class="ti ti-alert-triangle fs-4 flex-shrink-0 mt-1"></i>
+        <div>
+            <strong>{{ __('Grafana API error', 'grafana') }}</strong>
+            {% if api_error.exception is defined %}
+                <p class="mb-1 mt-1">{{ api_error.exception }}</p>
+            {% endif %}
+            {% if api_error.response is defined and api_error.response is not empty %}
+                <details>
+                    <summary class="text-muted" style="cursor:pointer;font-size:.85em;">
+                        {{ __('Response preview', 'grafana') }}
+                    </summary>
+                    <pre class="mt-1 mb-0 p-2" style="font-size:.8em;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto;">{{ api_error.response }}</pre>
+                </details>
+            {% endif %}
+        </div>
+    </div>
+{% else %}
+    <pre class="p-2 m-0" style="max-height:70vh;overflow:auto;"><code class="language-json">{{ json_pretty }}</code></pre>
+{% endif %}
