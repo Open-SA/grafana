@@ -32,6 +32,25 @@
  * - Added code for clipboard copy button
  */
 
+function grafanaHighlightJson(pre) {
+   var raw = pre.textContent;
+   pre.innerHTML = raw
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(
+         /("(?:\\u[0-9a-fA-F]{4}|\\[^u]|[^\\"])*"(\s*:)?|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g,
+         function(m) {
+            if (/^"/.test(m)) {
+               return /:$/.test(m)
+                  ? '<span class="gj-key">' + m + '</span>'
+                  : '<span class="gj-str">' + m + '</span>';
+            }
+            if (m === 'true' || m === 'false') return '<span class="gj-bool">' + m + '</span>';
+            if (m === 'null')                  return '<span class="gj-null">' + m + '</span>';
+            return '<span class="gj-num">' + m + '</span>';
+         }
+      );
+}
+
 $(function() {
 
    // do like a jquery toggle but based on a parameter
@@ -58,6 +77,12 @@ $(function() {
          params: {
             uid: uid,
             type: type
+         },
+         done: function() {
+            var pre = document.getElementById('grafana-json-output');
+            if (pre) {
+               grafanaHighlightJson(pre);
+            }
          }
       });
    });

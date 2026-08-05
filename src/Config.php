@@ -38,7 +38,6 @@ namespace GlpiPlugin\Grafana;
 
 use CommonDBTM;
 use Config as GlpiConfig;
-use Html;
 use CommonGLPI;
 use Session;
 use GlpiPlugin\Grafana\APIClient;
@@ -246,31 +245,25 @@ class Config extends CommonDBTM
     {
         $apiclient = new APIClient();
         $dashboard = $apiclient->getDashboard($dashboard_id);
+
         if ($dashboard === false) {
-            $err = $apiclient->getLastError();
-            echo '<div class="alert alert-warning">'
-                . htmlescape(__('Grafana API error', 'grafana') . ': ' . ($err['exception'] ?? __('Unknown error', 'grafana')))
-                . '</div>';
+            TemplateRenderer::getInstance()->display('@grafana/dashboard_json.html.twig', [
+                'api_error'   => $apiclient->getLastError(),
+                'json_pretty' => '',
+            ]);
             return;
         }
-        self::displayPrettyJson($dashboard);
-        Html::printCleanArray($dashboard);
-    }
 
-
-    public static function displayPrettyJson($array = [])
-    {
-        echo Html::css("public/lib/prismjs.css");
-        echo Html::script("public/lib/prismjs.js");
-
-        echo "<pre><code class='language-json'>";
-        echo htmlescape(preg_replace(
+        $json = preg_replace(
             "/(^|\G) {4}/m",
-            "   ", // replace indentation from 4 to 3 spaces
-            json_encode($array, JSON_PRETTY_PRINT
-                + JSON_UNESCAPED_UNICODE
-                + JSON_UNESCAPED_SLASHES)
-        ));
-        echo "</code></pre>";
+            "   ",
+            json_encode($dashboard, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+        ) ?: '';
+
+        TemplateRenderer::getInstance()->display('@grafana/dashboard_json.html.twig', [
+            'api_error'   => null,
+            'json_pretty' => $json,
+            'dashboard'   => $dashboard,
+        ]);
     }
 }
