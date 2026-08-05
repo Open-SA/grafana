@@ -260,8 +260,8 @@ class Config extends CommonDBTM
 
     public static function displayPrettyJson($array = [])
     {
-        echo Html::css("lib/prism/prism.css");
-        echo Html::script("lib/prism/prism.js");
+        echo Html::css("public/lib/prismjs.css");
+        echo Html::script("public/lib/prismjs.js");
 
         echo "<pre><code class='language-json'>";
         echo htmlescape(preg_replace(
