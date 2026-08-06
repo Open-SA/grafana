@@ -3,17 +3,43 @@ name: "Publish release"
 on:
   push:
     tags:
-       - '*'
+      - '*'
 
 jobs:
   publish-release:
     permissions:
-      contents: "write"
-    name: "Publish release"
-    uses: "glpi-project/plugin-release-workflows/.github/workflows/publish-release.yml@v1"
-    with:
-      tag: "${{ github.ref_name }}"
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-      release-name: "${{ github.ref_name }}"
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader
 
-      release-body: ""
+      - name: Build plugin zip
+        run: |
+          TAG=${GITHUB_REF_NAME}
+          PLUGIN_NAME="grafana"
+          ZIP_NAME="${PLUGIN_NAME}-${TAG}.zip"
+
+          mkdir "${PLUGIN_NAME}"
+
+          for item in $(ls -A); do
+            case "$item" in
+              "${PLUGIN_NAME}"|".git"|".git-hooks"|".gitlab-ci.yml"|".github"|"tests"|".gitignore"|".php-cs-fixer.php"|"phpstan.neon"|"phpunit.xml")
+                echo "Skipping ${item}..."
+                ;;
+              *)
+                mv "$item" "${PLUGIN_NAME}/"
+                ;;
+            esac
+          done
+
+          zip -r "${ZIP_NAME}" "${PLUGIN_NAME}"
+          echo "ZIP_NAME=${ZIP_NAME}" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          files: ${{ env.ZIP_NAME }}
