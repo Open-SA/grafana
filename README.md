@@ -6,12 +6,31 @@
 | **Branch** | main    | support/glpi10  |
 | **Status** | Latest  | Supported |
 
-
-## English version 
+## English version
 
 # Grafana integration with GLPI
 
 This plugin is a modified version of the [GLPI metabase plugin](https://github.com/pluginsGLPI/metabase) that allows you to embed Grafana dashboards directly into GLPI.
+
+## Requirements
+
+- GLPI 11.x (for GLPI 10.x support, see the `support/glpi10` branch)
+- PHP 8.1+
+- A Grafana instance accessible from the GLPI server
+
+## Installation
+
+1. Download the latest release zip from the [Releases page](../../releases).
+2. Extract the `grafana` folder into `<glpi_root>/plugins/`.
+3. In GLPI: **Setup > Plugins**, find Grafana and click **Install**, then **Enable**.
+
+## Features
+
+- Embed Grafana dashboards directly inside GLPI
+- Granular permissions: assign dashboard access per user, group, profile, or entity
+- Forward GLPI session data to Grafana as URL variables (user, entity, profile, groups, language)
+- Set a default dashboard tab per profile or user
+- Dashboard tree view with folder support
 
 ## Plugin configuration
 
@@ -32,7 +51,7 @@ On the plugin's configuration page, you will need to provide the following infor
 
 You'll need to modify the following parameters in your grafana.ini file.
 
-![allowEmbedding](./docs/screenshots/allowEmbedding.png "Allow embbeding")
+![allowEmbedding](./docs/screenshots/allowEmbedding.png "Allow embedding")
 ![grafana.ini](./docs/screenshots/grafanaConfig.png "grafana.ini")
 
 Most parameters are self-explanatory, but here are a few key points:
@@ -40,14 +59,66 @@ Most parameters are self-explanatory, but here are a few key points:
 5. **Login URL:** Use the **JWKS URL** provided by the Grafana plugin in the previous section (point 4).
 6. **"sub" Parameter:** This must match the **username** you entered in the plugin configuration (point 2).
 
+### Session variables
+
+The plugin can forward GLPI session data to Grafana dashboards as URL variables (`var-*`). This allows Grafana to filter or personalize dashboards based on the logged-in user's context.
+
+On the configuration page, enable the variables you want to forward:
+
+![Session variables config](./docs/screenshots/sessionVarsEn.png "Session variables configuration")
+
+Available variables:
+
+| Variable | Description |
+|---|---|
+| `var-glpi_user_id` | User ID |
+| `var-glpi_username` | Username (login) |
+| `var-glpi_firstname` | First name |
+| `var-glpi_lastname` | Last name |
+| `var-glpi_entity_id` | Active entity ID |
+| `var-glpi_entity_name` | Active entity name |
+| `var-glpi_entity_ids` | All active entity IDs (comma-separated) |
+| `var-glpi_profile_id` | Active profile ID |
+| `var-glpi_profile_name` | Active profile name |
+| `var-glpi_groups` | Groups (comma-separated IDs) |
+| `var-glpi_language` | Language |
+
+To use them in Grafana, create dashboard variables with the same names (without the `var-` prefix).
+
 ### Permissions configuration
 
-Once everything is configured correctly, you can define which dashboards a user profile can see from the **Profiles** configuration page in GLPI.
-![profiles](./docs/screenshots/profileConfigEn.png "Profile configuration")
+Once everything is configured, click the **Permissions** button on the plugin configuration page to open the permissions management page.
+
+From there you can assign dashboard access individually to users, groups, profiles, or entities. Each entry lets you select which specific dashboards are visible.
+
+![Permissions page](./docs/screenshots/permissionsPageEn.png "Permissions management page")
+![Permissions entry](./docs/screenshots/permissionsEntryEn.png "Adding a permissions entry")
+
+---
 
 ## Español
 
 Este plugin es una versión modificada del [plugin de Metabase para GLPI](https://github.com/pluginsGLPI/metabase) que permite incrustar paneles de Grafana directamente en GLPI.
+
+## Requisitos
+
+- GLPI 11.x (para soporte de GLPI 10.x, ver la rama `support/glpi10`)
+- PHP 8.1+
+- Una instancia de Grafana accesible desde el servidor de GLPI
+
+## Instalación
+
+1. Descargar el zip de la última versión desde la [página de Releases](../../releases).
+2. Extraer la carpeta `grafana` dentro de `<raiz_glpi>/plugins/`.
+3. En GLPI: **Configuración > Complementos**, buscar Grafana y hacer clic en **Instalar**, luego en **Activar**.
+
+## Funcionalidades
+
+- Incrustar paneles de Grafana directamente dentro de GLPI
+- Permisos granulares: asignar acceso a paneles por usuario, grupo, perfil o entidad
+- Enviar datos de sesión de GLPI a Grafana como variables de URL (usuario, entidad, perfil, grupos, idioma)
+- Establecer un panel por defecto por perfil o usuario
+- Vista de árbol de paneles con soporte de carpetas
 
 ## Configuración del plugin
 
@@ -58,26 +129,55 @@ En la página de configuración del plugin dentro de GLPI, necesitarás proporci
 ![Plugin config page](./docs/screenshots/configPage.png "Plugin config page")
 
 <ol>
-  <li><b>URL de Grafana:</b>La URL del servidor de Grafana al que deseas conectarte.</li>
-  <li>& 3.<b>Credenciales de Grafana:</b>El <b>nombre de usuario</b> y la <b>contraseña</b> de un usuario de Grafana. El plugin utilizará esta cuenta para conectarse a la API, obtener la lista de paneles y autenticar a los usuarios para que puedan verlos dentro de GLPI. Se puede controlar qué paneles aparecen limitando los permisos de este usuario directamente en Grafana.</li>
-  <li value="4"><b>URL del JWKS:</b>Esta URL será necesaria más adelante cuando configures la autenticación en Grafana.</li>
-  <li><b>Usar Tema Claro:</b>Marcar esta casilla para que el plugin utilice el tema claro de Grafana en lugar del tema oscuro por defecto.</li>
+  <li><b>URL de Grafana:</b> La URL del servidor de Grafana al que deseas conectarte.</li>
+  <li>& 3. <b>Credenciales de Grafana:</b> El <b>nombre de usuario</b> y la <b>contraseña</b> de un usuario de Grafana. El plugin utilizará esta cuenta para conectarse a la API, obtener la lista de paneles y autenticar a los usuarios para que puedan verlos dentro de GLPI. Se puede controlar qué paneles aparecen limitando los permisos de este usuario directamente en Grafana.</li>
+  <li value="4"><b>URL del JWKS:</b> Esta URL será necesaria más adelante cuando configures la autenticación en Grafana.</li>
+  <li><b>Usar Tema Claro:</b> Marcar esta casilla para que el plugin utilice el tema claro de Grafana en lugar del tema oscuro por defecto.</li>
 </ol>
 
 ### Configuración del servidor Grafana
 
 A continuación, se deben modificar los siguientes parámetros en tu archivo grafana.ini.
 
-![allowEmbedding](./docs/screenshots/allowEmbedding.png "Permitir incrustación")  
+![allowEmbedding](./docs/screenshots/allowEmbedding.png "Permitir incrustación")
 ![grafana.ini](./docs/screenshots/grafanaConfig.png "grafana.ini")
 
 La mayoría de los parámetros son autoexplicativos, algunas notas:
 - Tener en cuenta que la opción **allow_embedding** no se encuentra en el mismo bloque de configuración que las demás.
 5. **url_login:** Utiliza la URL proporcionada por el plugin en la sección anterior (punto 4).
-6. **parámetro sub:** Debe coincidir con el **nombre de usuario** que ingresaste en la configuración del plugin (punto 2).  
+6. **parámetro sub:** Debe coincidir con el **nombre de usuario** que ingresaste en la configuración del plugin (punto 2).
+
+### Variables de sesión
+
+El plugin puede enviar datos de la sesión de GLPI a los paneles de Grafana como variables de URL (`var-*`). Esto permite que Grafana filtre o personalice los paneles según el contexto del usuario conectado.
+
+En la página de configuración, activar las variables que se quieran enviar:
+
+![Configuración de variables de sesión](./docs/screenshots/sessionVars.png "Configuración de variables de sesión")
+
+Variables disponibles:
+
+| Variable | Descripción |
+|---|---|
+| `var-glpi_user_id` | ID de usuario |
+| `var-glpi_username` | Nombre de usuario (login) |
+| `var-glpi_firstname` | Nombre |
+| `var-glpi_lastname` | Apellido |
+| `var-glpi_entity_id` | ID de entidad activa |
+| `var-glpi_entity_name` | Nombre de entidad activa |
+| `var-glpi_entity_ids` | Todos los IDs de entidades activas (separados por coma) |
+| `var-glpi_profile_id` | ID de perfil activo |
+| `var-glpi_profile_name` | Nombre de perfil activo |
+| `var-glpi_groups` | Grupos (IDs separados por coma) |
+| `var-glpi_language` | Idioma |
+
+Para usarlas en Grafana, crear variables de dashboard con los mismos nombres (sin el prefijo `var-`).
 
 ### Configuración de permisos
 
-Una vez que todo esté configurado correctamente, se puede definir qué paneles puede ver cada perfil de usuario desde la página de configuración de **Perfiles** en GLPI.
+Una vez configurado todo, hacer clic en el botón **Permisos** de la página de configuración del plugin para abrir la página de gestión de permisos.
 
-![profiles](./docs/screenshots/profileConfig.png "Configuración de perfil")
+Desde ahí se puede asignar acceso a paneles individualmente a usuarios, grupos, perfiles o entidades. Cada entrada permite seleccionar qué paneles específicos son visibles.
+
+![Página de permisos](./docs/screenshots/permissionsPage.png "Página de gestión de permisos")
+![Entrada de permisos](./docs/screenshots/permissionsEntry.png "Agregar una entrada de permisos")

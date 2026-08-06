@@ -38,12 +38,11 @@ namespace GlpiPlugin\Grafana;
 
 use CommonDBTM;
 use Config as GlpiConfig;
-use Html;
 use CommonGLPI;
 use Session;
-use Dropdown;
 use GlpiPlugin\Grafana\APIClient;
 use Plugin;
+use Glpi\Application\View\TemplateRenderer;
 
 class Config extends CommonDBTM
 {
@@ -71,7 +70,7 @@ class Config extends CommonDBTM
     {
         switch ($item->getType()) {
             case 'Config':
-                return self::createTabEntry(self::getTypeName());
+                return self::createTabEntry(self::getTypeName(), 0, -1, 'ti ti-chart-infographic');
         }
 
         return '';
@@ -95,233 +94,37 @@ class Config extends CommonDBTM
         /** @var array $CFG_GLPI */
         global $CFG_GLPI;
 
-        $public_key = file_get_contents(GLPI_PLUGIN_DOC_DIR . '/grafana/keys/public_key.pem');
-
-        $canedit = Session::haveRight("config", UPDATE);
-
-        if (!$canedit) {
+        if (!Session::haveRight("config", UPDATE)) {
             return false;
         }
 
         $current_config = self::getConfig();
-        echo "<div class='grafana_config'>";
-        echo '<h1>' . __('Grafana plugin configuration', 'grafana') . '</h1>';
+        $is_valid       = self::isValid();
+        $api_status     = null;
+        $last_error     = null;
 
-        if ($canedit) {
-            echo "<form name='form' action='" . Plugin::getWebDir('grafana') . "/front/config.form.php' method='post'>";
-        }
-
-        echo "<div id='base_config' class='grafana_config_block'>";
-        echo self::showField([
-            'label' => __('Grafana URL', 'grafana'),
-            'attrs' => [
-                'name'        => 'url',
-                'value'       => $current_config['url'],
-                'placeholder' => 'https://grafana.domain',
-                'required' => true,
-            ],
-        ]);
-        echo self::showField([
-            'inputtype' => 'text',
-            'label'    => __('Grafana Username', 'grafana'),
-            'attrs'    => [
-                'name'     => 'username',
-                'value'    => $current_config['username'],
-                'required' => true,
-            ],
-        ]);
-
-        echo self::showField([
-            'inputtype' => 'password',
-            'label'     => __('Grafana Password', 'grafana'),
-            'attrs'     => [
-                'name'     => 'password',
-                'value'    => '',
-                'required' => false,
-            ],
-        ]);
-
-        echo self::showField([
-            'inputtype' => 'paragraph',
-            'label'     => __('JWKS url', 'grafana'),
-            'attrs'    => [
-                'value' => $CFG_GLPI['url_base'] . "/plugins/grafana/front/jwks.php",
-                'id' => 'grafana_jwks_url'
-            ],
-        ]);
-
-        echo self::showField([
-            'inputtype' => 'checkbox',
-            'label'     => __('Grafana light mode theme', 'grafana'),
-            'attrs'     => [
-                'name'     => 'lightmode',
-                'value'    => $current_config['lightmode'] ?? 0,
-                'required' => false,
-                'id' => 'grafana_lightmode',
-            ],
-        ]);
-
-        echo "<input type='hidden' name='copy' id='translated_copy' value='" . __('Copy', 'grafana') . "'>";
-        echo "<input type='hidden' name='copied' id='translated_copied' value='" . __('Copied!', 'grafana') . "'>";
-
-        if ($canedit) {
-            echo Html::hidden('config_class', ['value' => __CLASS__]);
-            echo Html::hidden('config_context', ['value' => 'plugin:grafana']);
-            echo Html::submit(_sx('button', 'Save'), [
-                'class' => 'btn btn-primary',
-                'icon'  => 'ti ti-device-floppy',
-                'name'  => 'update',
-            ]);
-        }
-        echo '</div>';
-        Html::closeForm();
-
-
-        if (self::isValid()) {
-            echo "<h1>" . __("API status", 'grafana') . "</h1>";
-            $apiclient    = new APIClient();
-            $all_status   = $apiclient->status();
-
-            echo "<ul>";
-            foreach ($all_status as $status_label => $status) {
-                $color_png = "greenbutton.png";
-                if (!$status) {
-                    $color_png = "redbutton.png";
-                }
-                echo "<li>";
-                echo Html::image($CFG_GLPI['root_doc'] . "/pics/$color_png");
-                echo "&nbsp;" . $status_label;
-                echo "</li>";
-            }
-            echo "</ul>";
-
-            $error = $apiclient->getLastError();
+        if ($is_valid) {
+            $apiclient  = new APIClient();
+            $api_status = $apiclient->status();
+            $error      = $apiclient->getLastError();
             if (count($error)) {
-                echo "<h1>" . __("Last Error", 'grafana') . "</h1>";
-                if (isset($error['exception'])) {
-                    echo $error['exception'];
-                } else {
-                    Html::printCleanArray($error);
-                }
+                $last_error = $error;
             }
-
-            echo "<div id='actions'>";
-            if ($canedit) {
-                echo "<form name='form' action='" . self::getFormUrl() . "' method='post'>";
-            }
-
-            echo "<h1>" . __("Action(s)", 'grafana') . "</h1>";
-            echo "<div class='btn-group-vertical'>";
-
-            Html::closeForm();
-            echo '<a href="' . Plugin::getWebDir('grafana') . '/front/dashboards.php" class="btn btn-outline-secondary">'
-                . "<i class='ti ti-chart-infographic'></i>"
-                . "<span>" . __('Show reports and dashboards specifications', 'grafana') . "</span>"
-                . '</a>';
-
-            echo '</div>';
-        }
-    }
-
-    public static function showField($options = [])
-    {
-        $rand            = mt_rand();
-        $default_options = [
-            'inputtype' => 'text',
-            'itemtype'  => '',
-            'label'     => '',
-            'help'      => '',
-            'attrs'     => [
-                'name'        => '',
-                'value'       => '',
-                'placeholder' => '',
-                'style'       => 'width:50%;',
-                'id'          => "grafanaconfig_field_$rand",
-                'class'       => 'grafana_input form-control',
-                'required'    => 'required',
-                'on_change'   => '',
-            ],
-        ];
-        $options = array_replace_recursive($default_options, $options);
-
-        if ($options['attrs']['required'] === false) {
-            unset($options['attrs']['required']);
         }
 
-        $out = '';
-        $out .= "<div class='grafana_field'>";
+        TemplateRenderer::getInstance()->display('@grafana/config.html.twig', [
+            'form_url'        => Plugin::getWebDir('grafana') . '/front/config.form.php',
+            'current_config'  => $current_config,
+            'jwks_url'        => $CFG_GLPI['url_base'] . '/plugins/grafana/front/jwks.php',
+            'is_valid'        => $is_valid,
+            'api_status'      => $api_status,
+            'last_error'      => $last_error,
+            'dashboards_url'  => Plugin::getWebDir('grafana') . '/front/dashboards.php',
+            'rights_url'      => Plugin::getWebDir('grafana') . '/front/rights.php',
+            'url_params_pool' => self::getUrlParamsPool(),
+        ]);
 
-        // call the field according to its type
-        switch ($options['inputtype']) {
-            default:
-            case 'text':
-                $out .= Html::input('fakefield', ['style' => 'display:none;']);
-                $out .= Html::input($options['attrs']['name'], $options['attrs']);
-                break;
-
-            case 'password':
-                $out .= "<input type='password' name='fakefield' style='display:none;'>";
-                $out .= "<input type='password'";
-                foreach ($options['attrs'] as $key => $value) {
-                    $out .= "$key='$value' ";
-                }
-                $out .= '>';
-                break;
-
-            case 'yesno':
-                $options['attrs']['display'] = false;
-                $out .= Dropdown::showYesNo($options['attrs']['name'], $options['attrs']['value'], -1, $options['attrs']);
-                break;
-
-            case 'dropdown':
-                $options['attrs']['display'] = false;
-                $out .= Dropdown::show($options['itemtype'], $options['attrs']);
-                break;
-
-            case 'number':
-                $options['attrs']['display'] = false;
-                $out .= Dropdown::showNumber($options['attrs']['name'], $options['attrs']);
-                break;
-
-            case 'paragraph':
-                $out .= '<div class="grafana_paragraph">';
-                $id = $options['attrs']['id'];
-                $out .= "<label class='grafana_label_paragraph' for='{$options['attrs']['id']}'>
-                  {$options['label']}</label>";
-                $options['attrs']['display'] = false;
-                $out .= "<p id='" . $id . "'>" . nl2br($options['attrs']['value']) . "</p>";
-                $out .= "<button id='copy_clipboard' type='button' class='btn btn-secondary'>"
-                    . "<i id='button_icon' class='ti ti-clipboard'></i> "
-                    . "<span id='button_text'>" . __('Copy', 'grafana') . "</span>"
-                    . "</button>";
-                $out .= '</div>';
-                break;
-
-            case 'checkbox':
-                $checked = $options['attrs']['value'] ? 'checked' : '';
-                $out .= "<input type='hidden' name='{$options['attrs']['name']}' value='0'>";
-                $out .= "<input type='checkbox' class='form-check-input' name='{$options['attrs']['name']}' id='{$options['attrs']['id']}' " . $checked . ">";
-                break;
-
-            case 'iconbutton':
-                $out .= "<button id='{$options['attrs']['id']}' type='button' class='btn btn-secondary'>"
-                    . "<i id='{$options['attrs']['icon_id']}' class='{$options['attrs']['icon']}'></i> "
-                    . "<span id='{$options['attrs']['text_id']}'> {$options['attrs']['buttontext']} </span>"
-                    . "</button>";
-                break;
-        }
-        if ($options['inputtype'] != 'paragraph') {
-            $out .= "<label class='grafana_label' for='{$options['attrs']['id']}'>
-                  {$options['label']}</label>";
-        }
-
-        if (strlen($options['help'])) {
-            $out .= "<i class='fa grafana_help fa-info-circle' title='{$options['help']}'></i>";
-        }
-
-        $out .= '</div>';
-
-        return $out;
+        return true;
     }
 
     /**
@@ -338,7 +141,6 @@ class Config extends CommonDBTM
         $valid_api = true;
         if ($with_api) {
             $apiclient = new APIClient();
-            $apiclient->connect();
             $valid_api = !in_array(false, $apiclient->status());
         }
 
@@ -371,34 +173,99 @@ class Config extends CommonDBTM
         return $input;
     }
 
-    public static function getDashboards($folder_uid)
+    /**
+     * Full pool of GLPI session fields that can be forwarded to Grafana as URL variables.
+     * Keys become the Grafana variable name (prepended with "var-").
+     *
+     * @return array<string, string>  key => translated label
+     */
+    public static function getUrlParamsPool(): array
     {
-        $api = new APIClient();
-        $dashs = $api->getDashboards($folder_uid);
+        return [
+            'glpi_user_id'      => __('User ID', 'grafana'),
+            'glpi_username'     => __('Username (login)', 'grafana'),
+            'glpi_firstname'    => __('First name', 'grafana'),
+            'glpi_lastname'     => __('Last name', 'grafana'),
+            'glpi_entity_id'    => __('Active entity ID', 'grafana'),
+            'glpi_entity_name'  => __('Active entity name', 'grafana'),
+            'glpi_entity_ids'   => __('All active entity IDs (comma-separated)', 'grafana'),
+            'glpi_profile_id'   => __('Active profile ID', 'grafana'),
+            'glpi_profile_name' => __('Active profile name', 'grafana'),
+            'glpi_groups'       => __('Groups (comma-separated IDs)', 'grafana'),
+            'glpi_language'     => __('Language', 'grafana'),
+        ];
+    }
+
+    /**
+     * Read the current session and return a value for each pool key.
+     *
+     * @return array<string, string>
+     */
+    public static function getSessionUrlParamValues(): array
+    {
+        /** @var array $CFG_GLPI */
+        return [
+            'glpi_user_id'      => (string) Session::getLoginUserID(),
+            'glpi_username'     => (string) ($_SESSION['glpiname'] ?? ''),
+            'glpi_firstname'    => (string) ($_SESSION['glpifirstname'] ?? ''),
+            'glpi_lastname'     => (string) ($_SESSION['glpirealname'] ?? ''),
+            'glpi_entity_id'    => (string) ($_SESSION['glpiactive_entity'] ?? ''),
+            'glpi_entity_name'  => (string) ($_SESSION['glpiactive_entity_name'] ?? ''),
+            'glpi_entity_ids'   => implode(',', (array) ($_SESSION['glpiactiveentities'] ?? [])),
+            'glpi_profile_id'   => (string) ($_SESSION['glpiactiveprofile']['id'] ?? ''),
+            'glpi_profile_name' => (string) ($_SESSION['glpiactiveprofile']['name'] ?? ''),
+            'glpi_groups'       => implode(',', (array) ($_SESSION['glpigroups'] ?? [])),
+            'glpi_language'     => (string) ($_SESSION['glpilanguage'] ?? ''),
+        ];
+    }
+
+    /**
+     * Build the Grafana URL query string for all enabled session params.
+     * Returns a string like "&var-glpi_entity_id=42&var-glpi_user_id=5",
+     * or an empty string if nothing is enabled.
+     *
+     * @return string
+     */
+    public static function buildGrafanaUrlParams(): string
+    {
+        $config = self::getConfig();
+        $values = self::getSessionUrlParamValues();
+        $parts  = [];
+
+        foreach (array_keys(self::getUrlParamsPool()) as $key) {
+            if (!empty($config['url_param_' . $key]) && ($values[$key] ?? '') !== '') {
+                $parts[] = 'var-' . rawurlencode($key) . '=' . rawurlencode($values[$key]);
+            }
+        }
+
+        return $parts ? '&' . implode('&', $parts) : '';
     }
 
     public static function displayDashboardJson($dashboard_id)
     {
         $apiclient = new APIClient();
-        $dashboard = $apiclient->getDashboard($dashboard_id);
-        self::displayPrettyJson($dashboard);
-        Html::printCleanArray($dashboard);
-    }
+        $result    = $apiclient->getDashboard($dashboard_id);
 
+        if ($result === false || empty($result)) {
+            TemplateRenderer::getInstance()->display('@grafana/dashboard_json.html.twig', [
+                'api_error'   => $apiclient->getLastError(),
+                'json_pretty' => '',
+            ]);
+            return;
+        }
 
-    public static function displayPrettyJson($array = [])
-    {
-        echo Html::css("lib/prism/prism.css");
-        echo Html::script("lib/prism/prism.js");
+        $dashboard = $result[0];
 
-        echo "<pre><code class='language-json'>";
-        echo preg_replace(
+        $json = preg_replace(
             "/(^|\G) {4}/m",
-            "   ", // replace indentation from 4 to 3 spaces
-            json_encode($array, JSON_PRETTY_PRINT
-                + JSON_UNESCAPED_UNICODE
-                + JSON_UNESCAPED_SLASHES)
-        );
-        echo "</code></pre>";
+            "   ",
+            json_encode($dashboard, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+        ) ?: '';
+
+        TemplateRenderer::getInstance()->display('@grafana/dashboard_json.html.twig', [
+            'api_error'   => null,
+            'json_pretty' => $json,
+            'dashboard'   => $dashboard,
+        ]);
     }
 }

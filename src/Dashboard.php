@@ -39,12 +39,13 @@ namespace GlpiPlugin\Grafana;
 require_once GLPI_ROOT . '/plugins/grafana/vendor/autoload.php';
 use CommonDBTM;
 use CommonGLPI;
-use GlpiPlugin\Grafana\Profileright;
+use GlpiPlugin\Grafana\DashboardRight;
 use GlpiPlugin\Grafana\APIClient;
 use Central;
+use Session;
 use Dropdown;
 use DateTimeImmutable;
-use Html;
+use Glpi\Application\View\TemplateRenderer;
 
 use Lcobucci\JWT\Configuration;
 
@@ -70,8 +71,8 @@ class Dashboard extends CommonDBTM
     {
         switch ($item->getType()) {
             case 'Central':
-                if (Profileright::canProfileViewDashboards($_SESSION['glpiactiveprofile']['id'])) {
-                    return self::createTabEntry(self::getTypeName());
+                if (DashboardRight::canUserViewDashboards((int) Session::getLoginUserID())) {
+                    return self::createTabEntry(self::getTypeName(), 0, -1, 'ti ti-chart-infographic');
                 }
 
                 break;
@@ -88,7 +89,7 @@ class Dashboard extends CommonDBTM
     {
         switch (get_class($item)) {
             case Central::class:
-                if (Profileright::canProfileViewDashboards($_SESSION['glpiactiveprofile']['id'])) {
+                if (DashboardRight::canUserViewDashboards((int) Session::getLoginUserID())) {
                     self::showForCentral($item, $withtemplate);
                 }
 
@@ -108,50 +109,73 @@ class Dashboard extends CommonDBTM
      */
     public static function showForCentral(Central $item, $withtemplate = 0, $is_helpdesk = false)
     {
-
         global $CFG_GLPI;
 
         $apiclient = new APIClient();
 
-        $currentUuid = isset($_GET['uuid']) ? $_GET['uuid'] : null;
+        $requestedUuid = isset($_GET['uuid']) ? $_GET['uuid'] : null;
 
         $dashboards = $apiclient->getDashboards();
-        if (is_array($dashboards)) {
+        $apiError   = null;
+        if ($dashboards === false) {
+            $apiError   = $apiclient->getLastError();
+            $dashboards = [];
+        } elseif (is_array($dashboards)) {
+            $userId     = (int) Session::getLoginUserID();
             $dashboards = array_filter(
                 $dashboards,
-                function ($dashboard) {
-                    $canView            = Profileright::canProfileViewDashboard(
-                        $_SESSION['glpiactiveprofile']['id'],
-                        $dashboard['uid'],
-                    );
-
-                    return $canView;
+                function ($dashboard) use ($userId) {
+                    return DashboardRight::canUserViewDashboard($userId, $dashboard['uid']);
                 },
             );
+        }
+
+        if ($apiError !== null) {
+            TemplateRenderer::getInstance()->display('@grafana/dashboard.html.twig', [
+                'api_error'    => $apiError,
+                'dropdown'     => '',
+                'keys_missing' => false,
+            ]);
+            return;
         }
 
         if (empty($dashboards)) {
             return;
         }
 
-        if (null === $currentUuid) {
-            $firstDashboard = current($dashboards);
-            $currentUuid    = $firstDashboard['id'];
+        $validIds = array_column($dashboards, 'id');
+        if ($requestedUuid !== null && in_array((int) $requestedUuid, $validIds, true)) {
+            $currentUuid = (int) $requestedUuid;
+        } else {
+            $currentUuid = current($dashboards)['id'];
         }
 
-        Dropdown::showFromArray(
+        $dropdown = Dropdown::showFromArray(
             'current_dashboard',
             array_combine(array_column($dashboards, 'id'), array_column($dashboards, 'title')),
             [
-                'on_change' => ($is_helpdesk) ? 'location.href = location.origin+location.pathname+"?uuid="+$(this).val()' : 'reloadTab("uuid=" + $(this).val());',
+                'on_change' => $is_helpdesk
+                    ? 'location.href = location.origin+location.pathname+"?uuid="+$(this).val()'
+                    : 'reloadTab("uuid=" + $(this).val());',
                 'value'     => $currentUuid,
+                'display'   => false,
             ],
         );
 
-        $config = Config::getConfig();
-        $private_key = file_get_contents(GLPI_PLUGIN_DOC_DIR . '/grafana/keys/private_key.pem');
-        $public_key = file_get_contents(GLPI_PLUGIN_DOC_DIR . '/grafana/keys/public_key.pem');
+        $private_key_path = GLPI_PLUGIN_DOC_DIR . '/grafana/keys/private_key.pem';
+        $public_key_path  = GLPI_PLUGIN_DOC_DIR . '/grafana/keys/public_key.pem';
 
+        if (!file_exists($private_key_path) || !file_exists($public_key_path)) {
+            TemplateRenderer::getInstance()->display('@grafana/dashboard.html.twig', [
+                'dropdown'     => $dropdown,
+                'keys_missing' => true,
+            ]);
+            return;
+        }
+
+        $config      = Config::getConfig();
+        $private_key = file_get_contents($private_key_path);
+        $public_key  = file_get_contents($public_key_path);
 
         $signer_config = Configuration::forAsymmetricSigner(
             new Sha256(),
@@ -159,54 +183,32 @@ class Dashboard extends CommonDBTM
             InMemory::plainText($public_key),
         );
 
-
-        // Create the token
-        $now = new DateTimeImmutable();
+        $now   = new DateTimeImmutable();
         $token = $signer_config->builder()
-            ->issuedBy("glpi_plugin") // Configures the issuer (iss claim)
-            ->expiresAt($now->modify('+1 hour')) // Expiration time
-            ->relatedTo($config['username']) // Sub claim with the username of the user in the config
-            ->withHeader('kid', 'grafana-key-1') // Kinda selects the public key to use Grafana side
-            ->getToken($signer_config->signer(), $signer_config->signingKey()); // Retrieves the generated token
+            ->issuedBy('glpi_plugin')
+            ->expiresAt($now->modify('+1 hour'))
+            ->relatedTo($config['username'])
+            ->withHeader('kid', 'grafana-key-1')
+            ->getToken($signer_config->signer(), $signer_config->signingKey());
 
         $currentDashboard = current(array_filter($dashboards, function ($dashboard) use ($currentUuid) {
             return $dashboard['id'] == $currentUuid;
         }));
         $dashboardUrl = $currentDashboard['url'];
-        $url = rtrim($config['url'], '/');
+        $url          = rtrim($config['url'], '/');
         if (strpos($dashboardUrl, '/d/') !== 0) {
             $dashboardUrl = substr($dashboardUrl, strpos($dashboardUrl, '/d/'));
         }
-        // The kiosk parameter is used to hide the Grafana header and footer so it only shows the dashboard
-        $fullUrl = $url . $dashboardUrl . '?kiosk&auth_token=' . $token->toString();
+        // The kiosk parameter hides the Grafana header/footer so only the dashboard is shown
+        $baseIframeUrl = $url . $dashboardUrl . '?kiosk' . Config::buildGrafanaUrlParams();
 
-        echo "<iframe src='$fullUrl' id='grafana_iframe' allowtransparency></iframe>";
-
-        echo Html::scriptBlock("
-            setInterval(function() {
-                console.log('Refreshing Grafana iframe token');
-
-                $.ajax({
-                    url: '" . $CFG_GLPI['url_base'] . "/plugins/grafana/ajax/refresh_token.php',
-                    dataType: 'json',
-                    success: function(data) {
-                        if (data.token) {
-                            var ifram = document.getElementById('grafana_iframe');
-                            var url_string = ifram.src;
-                            var index_auth = url_string.indexOf('auth_token=');
-
-                            if (index_auth !== -1) {
-                                var new_url = url_string.substring(0, index_auth) + 'auth_token=' + data.token;
-                            }
-                            ifram.src = new_url;
-                        } else {
-                            console.error('Error refreshing token');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error refreshing token:', error);
-                    }
-                });
-            }, 55 * 60 * 1000);");
+        TemplateRenderer::getInstance()->display('@grafana/dashboard.html.twig', [
+            'dropdown'        => $dropdown,
+            'keys_missing'    => false,
+            'iframe_src'      => $baseIframeUrl . '&auth_token=' . $token->toString(),
+            'base_iframe_url' => $baseIframeUrl,
+            'initial_token'   => $token->toString(),
+            'refresh_url'     => $CFG_GLPI['url_base'] . '/plugins/grafana/ajax/refresh_token.php',
+        ]);
     }
 }

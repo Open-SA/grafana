@@ -40,7 +40,7 @@ use Config;
 use GlpiPlugin\Grafana\APIClient;
 
 include('../../../inc/includes.php');
-Session::checkRight("config", READ);
+Session::checkRight("config", UPDATE);
 
 require_once __DIR__ . '/../src/Config.php';
 
@@ -56,27 +56,32 @@ if (isset($_REQUEST["empty_button"])) {
         $config->update($_POST);
         Html::back();
     }
+    if (!empty($_POST["update_url_params"])) {
+        $_POST['config_context'] = 'plugin:grafana';
+        $config->update($_POST);
+        Html::back();
+    }
+
     if (!empty($_POST["update"])) {
-        $context = array_key_exists('config_context', $_POST) ? $_POST['config_context'] : 'core';
+        $_POST['config_context'] = 'plugin:grafana';
 
         if ($CFG_GLPI['version'] < '11.0.0') {
             $glpikey = new GLPIKey();
             foreach (array_keys($_POST) as $field) {
-                if ($glpikey->isConfigSecured($context, $field)) {
+                if ($glpikey->isConfigSecured('plugin:grafana', $field)) {
                     // Field must not be altered, it will be encrypted and never displayed, so sanitize is not necessary.
                     $_POST[$field] = $_UPOST[$field];
                 }
             }
         }
 
-
         $config->update($_POST);
 
         $mode = $_POST['lightmode'] == "on" ? "light" : "dark";
 
         $apiclient = new APIClient();
-        $apiclient->httpQuery(
-            '/grafana/api/user/preferences',
+        $themeResult = $apiclient->httpQuery(
+            'user/preferences',
             [
                 'json' => [
                     'theme' => $mode
@@ -85,6 +90,15 @@ if (isset($_REQUEST["empty_button"])) {
             'PUT'
         );
 
+        if ($themeResult === false) {
+            $err = $apiclient->getLastError();
+            $errMsg = $err['exception'] ?? __('Unknown error', 'grafana');
+            Session::addMessageAfterRedirect(
+                sprintf(__('Configuration saved, but Grafana theme sync failed: %s', 'grafana'), $errMsg),
+                false,
+                WARNING
+            );
+        }
 
         Html::displayMessageAfterRedirect(__('Configuration saved successfully'), true);
         Html::redirect(Toolbox::getItemTypeFormURL('Config'));

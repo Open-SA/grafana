@@ -29,7 +29,7 @@
  */
 
 use Config as GlpiConfig;
-use GlpiPlugin\Grafana\Profileright;
+use GlpiPlugin\Grafana\DashboardRight;
 
 /**
  * Plugin install process
@@ -48,46 +48,77 @@ function plugin_grafana_install()
     $default_collation = DBConnection::getDefaultCollation();
     $default_key_sign = DBConnection::getDefaultPrimaryKeySignOption();
 
-    $table = Profileright::getTable();
+    $newTable = DashboardRight::getTable();
+    $oldTable = 'glpi_plugin_grafana_profilrights';
 
-    if (!$DB->tableExists($table)) {
-        $migration->displayMessage("Installing $table");
+    if (!$DB->tableExists($newTable)) {
+        $migration->displayMessage("Installing $newTable");
 
-        $query = "CREATE TABLE IF NOT EXISTS `$table` (
+        $query = "CREATE TABLE IF NOT EXISTS `$newTable` (
                      `id` int {$default_key_sign} NOT NULL AUTO_INCREMENT,
-                     `profiles_id` int {$default_key_sign} NOT NULL,
                      `dashboard_uuid` varchar(200) NOT NULL,
-                     `rights` int NOT NULL,
+                     `actor_type` varchar(20) NOT NULL,
+                     `actor_id` int {$default_key_sign} NOT NULL,
                      PRIMARY KEY (`id`),
-                     UNIQUE `profiles_id_dashboard_uuid` (`profiles_id`, `dashboard_uuid`)
+                     UNIQUE KEY `dashboard_uuid_actor` (`dashboard_uuid`, `actor_type`, `actor_id`)
                   ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=DYNAMIC;";
-        $DB->doQuery($query) or die($DB->error());
+        $DB->doQuery($query);
+
+        if ($DB->tableExists($oldTable)) {
+            $migration->displayMessage("Migrating profile rights from $oldTable to $newTable");
+            $DB->doQuery("
+                INSERT IGNORE INTO `$newTable` (`dashboard_uuid`, `actor_type`, `actor_id`)
+                SELECT `dashboard_uuid`, 'Profile', `profiles_id`
+                FROM `$oldTable`
+                WHERE (`rights` & 1) > 0
+            ");
+            $DB->doQuery("DROP TABLE `$oldTable`");
+        }
+    }
+
+    // Default tab actors table — added in 1.3.0, runs on upgrade too
+    $defaultTabTable = 'glpi_plugin_grafana_defaulttabs';
+    if (!$DB->tableExists($defaultTabTable)) {
+        $migration->displayMessage("Installing $defaultTabTable");
+
+        $query = "CREATE TABLE IF NOT EXISTS `$defaultTabTable` (
+                     `id` int {$default_key_sign} NOT NULL AUTO_INCREMENT,
+                     `actor_type` varchar(20) NOT NULL,
+                     `actor_id` int {$default_key_sign} NOT NULL,
+                     PRIMARY KEY (`id`),
+                     UNIQUE KEY `actor_type_actor_id` (`actor_type`, `actor_id`)
+                  ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=DYNAMIC;";
+        $DB->doQuery($query);
     }
 
     $migration->executeMigration();
 
-    // fill config table with default values if missing
+    // Only insert missing keys — setConfigurationValues does an upsert, so we
+    // must guard existing values to avoid wiping the config on upgrade.
+    $existing = GlpiConfig::getConfigurationValues('plugin:grafana');
     foreach (
         [
-            // api access
-            'url'           => '',
-            'token'       => '',
-            'username'      => '',
-        ] as $key => $value
+            'url'      => '',
+            'token'    => '',
+            'username' => '',
+        ] as $key => $default
     ) {
-        GlpiConfig::setConfigurationValues('plugin:grafana', [$key => $value]);
+        if (!array_key_exists($key, $existing)) {
+            GlpiConfig::setConfigurationValues('plugin:grafana', [$key => $default]);
+        }
     }
 
     $keysDir = GLPI_PLUGIN_DOC_DIR . '/grafana/keys';
 
-    if (!is_dir($keysDir)) {
-        mkdir($keysDir, 0755, true);
+    if (!is_dir($keysDir) && !mkdir($keysDir, 0755, true)) {
+        $migration->displayWarning("Grafana plugin: could not create keys directory: $keysDir");
+        return false;
     }
 
     $private_key_path = $keysDir . '/private_key.pem';
     $public_key_path = $keysDir . '/public_key.pem';
 
-    if (file_exists($private_key_path) || file_exists($public_key_path)) {
+    if (file_exists($private_key_path) && file_exists($public_key_path)) {
         return true;
     }
 
@@ -96,12 +127,23 @@ function plugin_grafana_install()
         'private_key_type' => OPENSSL_KEYTYPE_RSA,
     ]);
 
+    if ($key_pair === false) {
+        $migration->displayWarning('Grafana plugin: could not generate RSA key pair. ' . openssl_error_string());
+        return false;
+    }
+
     openssl_pkey_export($key_pair, $private_key);
-    file_put_contents($private_key_path, $private_key);
+    if (file_put_contents($private_key_path, $private_key) === false) {
+        $migration->displayWarning("Grafana plugin: could not write private key to $private_key_path");
+        return false;
+    }
 
     $keyDetails = openssl_pkey_get_details($key_pair);
     $public_key = $keyDetails['key'];
-    file_put_contents($public_key_path, $public_key);
+    if (file_put_contents($public_key_path, $public_key) === false) {
+        $migration->displayWarning("Grafana plugin: could not write public key to $public_key_path");
+        return false;
+    }
 
     return true;
 }
@@ -117,7 +159,9 @@ function plugin_grafana_uninstall()
     $config = new GlpiConfig();
     $config->deleteByCriteria(['context' => 'plugin:grafana']);
 
-    $DB->doQuery('DROP TABLE IF EXISTS `' . Profileright::getTable() . '`');
+    $DB->doQuery('DROP TABLE IF EXISTS `' . DashboardRight::getTable() . '`');
+    $DB->doQuery('DROP TABLE IF EXISTS `glpi_plugin_grafana_defaulttabs`');
+    $DB->doQuery('DROP TABLE IF EXISTS `glpi_plugin_grafana_profilrights`');
 
 
     return true;

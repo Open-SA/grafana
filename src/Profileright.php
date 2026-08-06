@@ -42,8 +42,8 @@ use Profile;
 use Session;
 use Plugin;
 use GlpiPlugin\Grafana\APIClient;
-use Html;
 use DBmysql;
+use Glpi\Application\View\TemplateRenderer;
 
 class Profileright extends Profile
 {
@@ -103,41 +103,17 @@ class Profileright extends Profile
             return false;
         }
 
-        echo '<form method="post" action="' . self::getFormURL() . '">';
-        echo '<div class="spaced" id="tabsbody">';
-        echo '<table class="tab_cadre_fixe" id="mainformtable">';
-
-        echo '<tr class="headerRow"><th colspan="2">' . self::getTypeName() . '</th></tr>';
-
+        // Capture hook output so it can be passed as a template variable
+        ob_start();
         Plugin::doHook('pre_item_form', ['item' => $this, 'options' => &$options]);
+        $hook_html = ob_get_clean();
 
-        echo '<tr><th colspan="2">' . __('Rights management', 'grafana') . '</th></tr>';
-
-        echo '<input type="hidden" name="profiles_id" value="' . $id . '" />';
-
-        if (Session::haveRight('profile', UPDATE)) {
-            echo '<tr class="tab_bg_4">';
-            echo '<td colspan="2" class="center">';
-            echo '<button type="submit" class="btn btn-outline-secondary" name="set_rights_to_all" value="1">'
-                . "<i class='ti ti-check'></i>"
-                . '<span>' . __('Allow access to all', 'grafana') . '</span>'
-                . '</button>';
-            echo ' &nbsp; ';
-            echo '<button type="submit" class="btn btn-outline-secondary" name="set_rights_to_all" value="0">'
-                . "<i class='ti ti-forbid'></i>"
-                . '<span>' . __('Disallow access to all', 'grafana') . '</span>'
-                . '</button>';
-            echo '</td>';
-            echo '</tr>';
-        }
-
+        // Build per-dashboard rows; dropdownRight() outputs directly so capture it
         $apiclient  = new APIClient();
         $dashboards = $apiclient->getDashboards();
-
-        foreach ($dashboards as $dashboard) {
-            echo '<tr class="tab_bg_1">';
-            echo '<td>' . $dashboard['title'] . '</td>';
-            echo '<td>';
+        $rows = [];
+        foreach (is_array($dashboards) ? $dashboards : [] as $dashboard) {
+            ob_start();
             Profile::dropdownRight(
                 sprintf('dashboard[%s]', $dashboard['uid']),
                 [
@@ -147,26 +123,20 @@ class Profileright extends Profile
                     'nowrite' => 1,
                 ],
             );
-            echo '</td>';
-            echo '</tr>';
+            $rows[] = [
+                'title'    => $dashboard['title'],
+                'dropdown' => ob_get_clean(),
+            ];
         }
 
-        if (Session::haveRight('profile', UPDATE)) {
-            echo '<tr class="tab_bg_4">';
-            echo '<td colspan="2" class="center">';
-            echo Html::submit(_sx('button', 'Save'), [
-                'name'  => 'update',
-                'icon'  => 'ti ti-device-floppy',
-                'class' => 'btn btn-primary',
-            ]);
-            echo '</td>';
-            echo '</tr>';
-        }
-
-        echo '</table>';
-        echo '</div>';
-
-        Html::closeForm();
+        TemplateRenderer::getInstance()->display('@grafana/profileright.html.twig', [
+            'form_url'    => self::getFormURL(),
+            'profiles_id' => $id,
+            'type_name'   => self::getTypeName(),
+            'can_update'  => Session::haveRight('profile', UPDATE),
+            'hook_html'   => $hook_html,
+            'rows'        => $rows,
+        ]);
 
         return true;
     }

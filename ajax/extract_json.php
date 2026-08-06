@@ -37,17 +37,26 @@
 include('../../../inc/includes.php');
 
 use GlpiPlugin\Grafana\Config;
+use GlpiPlugin\Grafana\DashboardRight;
 
 header('Content-Type: text/html; charset=UTF-8');
 Html::header_nocache();
 Session::checkLoginUser();
 
 if (!isset($_REQUEST['uid']) || !isset($_REQUEST['type'])) {
-    exit;
+    return;
 }
 
 switch ($_REQUEST['type']) {
     case 'dashboard':
+        // Config READ grants access to the full dashboard specs page, so allow JSON too.
+        // Otherwise fall back to per-dashboard profile rights (used from the Central tab).
+        $canView = Session::haveRight('config', READ)
+            || DashboardRight::canUserViewDashboard((int) Session::getLoginUserID(), (string) $_REQUEST['uid']);
+        if (!$canView) {
+            header('HTTP/1.1 403 Forbidden', true, 403);
+            return;
+        }
         Config::displayDashboardJson($_REQUEST['uid']);
         break;
 }

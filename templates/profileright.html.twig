@@ -1,0 +1,72 @@
+{#
+ # -------------------------------------------------------------------------
+ # Grafana plugin for GLPI
+ # -------------------------------------------------------------------------
+ # Profile rights form — shown in the "Profiles" config tab.
+ #
+ # Variables:
+ #   form_url    string  POST action URL
+ #   profiles_id int     Current profile id
+ #   type_name   string  Translated itemtype label
+ #   can_update  bool    Whether the current user may edit rights
+ #   hook_html   string  Raw HTML output from pre_item_form hook (may be empty)
+ #   rows        array   Each entry: {title: string, dropdown: string (raw HTML)}
+ # -------------------------------------------------------------------------
+ #}
+
+<form method="post" action="{{ form_url }}">
+    <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="profiles_id" value="{{ profiles_id }}">
+
+    <div class="spaced" id="tabsbody">
+        <table class="tab_cadre_fixe" id="mainformtable">
+
+            <tr class="headerRow">
+                <th colspan="2">{{ type_name }}</th>
+            </tr>
+
+            {{ hook_html|raw }}
+
+            <tr>
+                <th colspan="2">{{ __('Rights management', 'grafana') }}</th>
+            </tr>
+
+            {% if can_update %}
+                <tr class="tab_bg_4">
+                    <td colspan="2" class="center">
+                        <button type="submit" class="btn btn-outline-secondary"
+                                name="set_rights_to_all" value="1">
+                            <i class="ti ti-check"></i>
+                            <span>{{ __('Allow access to all', 'grafana') }}</span>
+                        </button>
+                        &nbsp;
+                        <button type="submit" class="btn btn-outline-secondary"
+                                name="set_rights_to_all" value="0">
+                            <i class="ti ti-forbid"></i>
+                            <span>{{ __('Disallow access to all', 'grafana') }}</span>
+                        </button>
+                    </td>
+                </tr>
+            {% endif %}
+
+            {% for row in rows %}
+                <tr class="tab_bg_1">
+                    <td>{{ row.title }}</td>
+                    <td>{{ row.dropdown|raw }}</td>
+                </tr>
+            {% endfor %}
+
+            {% if can_update %}
+                <tr class="tab_bg_4">
+                    <td colspan="2" class="center">
+                        <button type="submit" class="btn btn-primary" name="update">
+                            <i class="ti ti-device-floppy"></i>
+                            <span>{{ _x('button', 'Save') }}</span>
+                        </button>
+                    </td>
+                </tr>
+            {% endif %}
+
+        </table>
+    </div>
+</form>

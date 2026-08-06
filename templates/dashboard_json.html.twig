@@ -1,0 +1,81 @@
+{#
+ # -------------------------------------------------------------------------
+ # Grafana plugin for GLPI
+ # -------------------------------------------------------------------------
+ # Dashboard JSON inspector — shown in a modal from the dashboards tree page.
+ #
+ # Variables:
+ #   api_error    array|null   Error from APIClient::getLastError(), or null
+ #   json_pretty  string       Pretty-printed JSON string (empty on error)
+ #   dashboard    array|null   Raw dashboard data from Grafana API, or null on error
+ # -------------------------------------------------------------------------
+ #}
+
+{% macro scalar(v) %}
+    {%- if v is same as(true) -%}<span class="badge bg-success">true</span>
+    {%- elseif v is same as(false) -%}<span class="badge bg-secondary">false</span>
+    {%- elseif v is null -%}<span class="text-muted">—</span>
+    {%- else -%}{{ v }}{%- endif -%}
+{% endmacro %}
+
+{% import _self as fmt %}
+
+{% if api_error %}
+    <div class="alert alert-warning d-flex gap-2 align-items-start">
+        <i class="ti ti-alert-triangle fs-4 flex-shrink-0 mt-1"></i>
+        <div>
+            <strong>{{ __('Grafana API error', 'grafana') }}</strong>
+            {% if api_error.exception is defined %}
+                <p class="mb-1 mt-1">{{ api_error.exception }}</p>
+            {% endif %}
+            {% if api_error.response is defined and api_error.response is not empty %}
+                <details>
+                    <summary class="text-muted" style="cursor:pointer;font-size:.85em;">
+                        {{ __('Response preview', 'grafana') }}
+                    </summary>
+                    <pre class="mt-1 mb-0 p-2" style="font-size:.8em;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto;">{{ api_error.response }}</pre>
+                </details>
+            {% endif %}
+        </div>
+    </div>
+{% else %}
+    {# ── JSON with syntax highlighting ──────────────────────────────────── #}
+    <pre id="grafana-json-output" class="grafana-json-pre">{{ json_pretty }}</pre>
+
+    {# ── Properties table ───────────────────────────────────────────────── #}
+    {% if dashboard is not empty %}
+        <table class="table table-sm table-hover table-bordered mb-0 mt-3">
+            <thead>
+                <tr>
+                    <th style="width:35%;">{{ __('Key', 'grafana') }}</th>
+                    <th>{{ __('Value', 'grafana') }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key, value in dashboard %}
+                    {% if value is not iterable %}
+                        <tr>
+                            <td><code class="text-body">{{ key }}</code></td>
+                            <td>{{ fmt.scalar(value) }}</td>
+                        </tr>
+                    {% elseif value is not empty %}
+                        <tr class="table-secondary">
+                            <td colspan="2" class="py-1">
+                                <code class="text-body fw-semibold">{{ key }}</code>
+                                <span class="text-muted fw-normal ms-1" style="font-size:.8em;">({{ value|length }})</span>
+                            </td>
+                        </tr>
+                        {% for subkey, subval in value %}
+                            {% if subval is not iterable %}
+                                <tr>
+                                    <td class="ps-4 text-muted"><code>{{ subkey }}</code></td>
+                                    <td>{{ fmt.scalar(subval) }}</td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+{% endif %}

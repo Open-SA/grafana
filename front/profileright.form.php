@@ -56,12 +56,16 @@ if (isset($_REQUEST['update'])) {
         Html::back();
     }
 
+    $profiles_id = (int) $_REQUEST['profiles_id'];
     $viewableDashboardsUuids = [];
     foreach ($_REQUEST['dashboard'] as $dashboardUuid => $rights) {
+        if (!preg_match('/^[a-zA-Z0-9_-]{1,64}$/', (string) $dashboardUuid)) {
+            continue;
+        }
         Profileright::setDashboardRightsForProfile(
-            $_REQUEST['profiles_id'],
+            $profiles_id,
             $dashboardUuid,
-            $rights,
+            (int) $rights,
         );
 
         if ($rights & READ) {
@@ -82,12 +86,14 @@ if (isset($_REQUEST['update'])) {
 
     $apiclient = new APIClient();
 
+    $profiles_id = (int) $_REQUEST['profiles_id'];
+    $rights_to_all = (int) $_REQUEST['set_rights_to_all'];
     $viewableDashboardsUuids = [];
-    foreach ($apiclient->getDashboards() as $dashboard) {
+    foreach (is_array($apiDashboards = $apiclient->getDashboards()) ? $apiDashboards : [] as $dashboard) {
         Profileright::setDashboardRightsForProfile(
-            $_REQUEST['profiles_id'],
+            $profiles_id,
             $dashboard['uid'],
-            $_REQUEST['set_rights_to_all'],
+            $rights_to_all,
         );
 
         $viewableDashboardsUuids[] = $dashboard['uid'];

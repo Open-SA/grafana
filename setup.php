@@ -34,16 +34,15 @@
  * - Changed initialization logic to register hooks that it will use
  */
 
-use Glpi\Plugin\Hooks;
 use GlpiPlugin\Grafana\Config;
 use GlpiPlugin\Grafana\Dashboard;
-use GlpiPlugin\Grafana\Profileright;
+use GlpiPlugin\Grafana\DashboardRight;
 use Glpi\Http\Firewall;
 use Glpi\Http\SessionManager;
 
 require_once __DIR__ . '/src/Config.php';
 
-define('PLUGIN_GRAFANA_VERSION', '1.1.0');
+define('PLUGIN_GRAFANA_VERSION', '1.1.1');
 
 // Minimal GLPI version, inclusive
 define('PLUGIN_GRAFANA_MIN_GLPI', '10.0.0');
@@ -68,7 +67,7 @@ function plugin_init_grafana()
     Firewall::addPluginStrategyForLegacyScripts('grafana', '#^/front/jwks.php$#', Firewall::STRATEGY_NO_CHECK);
 
     // Session handling for stateless resources
-    SessionManager::registerPluginStatelessPath('grafana', '#^/front/jwks.php/#');
+    SessionManager::registerPluginStatelessPath('grafana', '#^/front/jwks\.php$#');
 
     $PLUGIN_HOOKS['csrf_compliant']['grafana'] = true;
     // don't load hooks if plugin not enabled (or glpi not logged)
@@ -86,16 +85,16 @@ function plugin_init_grafana()
 
     // config page
     Plugin::registerClass(Config::class, ['addtabon' => 'Config']);
-    $PLUGIN_HOOKS['config_page']['grafana'] = 'front/config.form.php';
+    $PLUGIN_HOOKS['config_page']['grafana'] = 'front/config.php';
 
     // add dashboards
     Plugin::registerClass(Dashboard::class, ['addtabon' => 'Central']);
 
-    // profile rights management
-    Plugin::registerClass(Profileright::class, ['addtabon' => 'Profile']);
-
     // Encryption
     $PLUGIN_HOOKS['secured_configs']['grafana'] = ['password'];
+
+    // Default central tab — applied once per login session
+    $PLUGIN_HOOKS['post_init']['grafana'] = 'plugin_grafana_post_init';
 }
 
 
@@ -123,6 +122,25 @@ function plugin_version_grafana()
             ]
         ],
     ];
+}
+
+/**
+ * Called by GLPI on every page load after full session init.
+ * Sets the Grafana tab as the active Central tab for users who match
+ * a default-tab actor grant, but only once per login session so that
+ * manual tab switches are not overridden on the next page load.
+ */
+function plugin_grafana_post_init(): void
+{
+    if (!Session::getLoginUserID() || isset($_SESSION['glpi_grafana_default_tab_set'])) {
+        return;
+    }
+
+    $_SESSION['glpi_grafana_default_tab_set'] = true;
+
+    if (DashboardRight::isDefaultTabForUser((int) Session::getLoginUserID())) {
+        Session::setActiveTab('central', 'GlpiPlugin\Grafana\Dashboard$1');
+    }
 }
 
 function plugin_grafana_recursive_remove_empty($haystack)

@@ -1,0 +1,34 @@
+{#
+ # Recursive partial for the dashboards/folders tree.
+ #
+ # Variables:
+ #   node  array  A single tree node — either a dash-folder or a dash-db.
+ #                Folders may have .subfolders (array) and .dashboards (array).
+ #}
+
+{% if node.type == 'dash-folder' %}
+    <li class="grafana-tree-folder">
+        <button type="button" class="grafana-folder-toggle">
+            <i class="ti ti-chevron-right grafana-folder-arrow"></i>
+            <i class="ti ti-folder"></i>
+            {{ node.title }}
+        </button>
+        <ul>
+            {% for subfolder in node.subfolders ?? [] %}
+                {% include '@grafana/partials/tree_node.html.twig' with {node: subfolder} only %}
+            {% endfor %}
+            {% for dashboard in node.dashboards ?? [] %}
+                {% include '@grafana/partials/tree_node.html.twig' with {node: dashboard} only %}
+            {% endfor %}
+        </ul>
+    </li>
+{% else %}
+    <li>
+        <a href="#" class="extract grafana-dash-link"
+           data-uid="{{ node.uid }}"
+           data-type="dashboard">
+            <i class="ti ti-layout-dashboard"></i>
+            {{ node.title }}
+        </a>
+    </li>
+{% endif %}

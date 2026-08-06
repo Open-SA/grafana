@@ -26,257 +26,165 @@
  * -------------------------------------------------------------------------
  * Modified by Grafana plugin team
  * @copyright Copyright (C) 2025 by Grafana plugin team.
- * @link      https://github.com/Open-Sa/grafana 
+ * @link      https://github.com/Open-Sa/grafana
  * -------------------------------------------------------------------------
  * Changes
  * - Renaming of some classes and tweaks to the configuration page layout
  * - Addition of styles for extra fields and buttons
  */
 
+/* ── page wrapper ────────────────────────────────────────────────────────── */
+
 .grafana_config {
-   text-align: left;
-   width: 80%;
-   margin: 0 auto;
+    text-align: left;
+    width: 80%;
+    margin: 0 auto;
 }
 
-.grafana_config h1,
-.grafana_title {
-   font-size: 12px;
-   font-weight: bold;
-   text-align: center;
-   padding: 5px 10px 5px 0;
-   border-radius: 0;
-   margin: 15px 0 20px 0;
-   font-size: 1.1em;
-   color: #000;
-   padding: 10px 5px;
-   background-color: #F1F1F1;
+.grafana_config h1 {
+    font-weight: bold;
+    text-align: center;
+    font-size: 1.1em;
+    padding: 10px 5px;
+    margin: 15px 0 20px;
+    background-color: var(--bs-secondary-bg);
+    color: var(--bs-body-color);
 }
+
+/* ── config form fields ──────────────────────────────────────────────────── */
 
 .grafana_field {
-   margin: 10px 0 35px 0;
-   position: relative;
-   height: fit-content;
-   text-align: left;
-}
-
-.grafana_field .grafana_input,
-.grafana_field .select2-container {
-   display: inline-block;
-}
-
-.grafana_field .select2-container {
-   padding: inherit;
-}
-
-.grafana_field .grafana_help {
-   color: #A1A1A1;
-   cursor: help;
-   margin-left: 3px;
-}
-
-.grafana_field .grafana_help:hover {
-   color: #6B6B6B;
-}
-
-/* strangely, we can't do this with comma ...*/
-.grafana_field .grafana_input::-webkit-input-placeholder { opacity: 0; transition: opacity 0.1s ease-in-out; }
-.grafana_field .grafana_input:-moz-placeholder { opacity: 0; transition: opacity 0.1s ease-in-out; } /* FF 4-18 */
-.grafana_field .grafana_input::-moz-placeholder { opacity: 0; transition: opacity 0.1s ease-in-out; } /* FF 19+ */
-.grafana_field .grafana_input:-ms-input-placeholder { opacity: 0; transition: opacity 0.1s ease-in-out; } /* IE 10+ */
-.grafana_field .grafana_input:focus::-webkit-input-placeholder { opacity: 1; }
-.grafana_field .grafana_input:focus:-moz-placeholder { opacity: 1; }
-.grafana_field .grafana_input:focus::-moz-placeholder { opacity: 1; }
-.grafana_field .grafana_input:focus:-ms-input-placeholder { opacity: 1; }
-
-.grafana_field .grafana_input::-moz-placeholder {
-   opacity: 0;
-   transition: opacity 0.1s ease-in-out;
+    margin-bottom: 1.25rem;
 }
 
 .grafana_field .grafana_label {
-   position: absolute;
-   top: 5px;
-   left: 5px;
-   color: #686868;
-   z-index: 5;
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.35rem;
+    color: var(--bs-body-color);
 }
 
-.grafana_field .grafana_label_paragraph {
-   position: absolute;
-   left: 5px;
-   top: -20px;
-   color: #686868;
-   z-index: 5;
+.grafana_field .grafana_help {
+    color: var(--bs-secondary-color);
+    cursor: help;
+    margin-left: 3px;
 }
 
-.grafana_paragraph {
-   display: flex;
-   width: 51%;
-   align-items: center;
+.grafana_field .grafana_help:hover {
+    color: var(--bs-body-color);
 }
 
-#copy_clipboard {
-   margin-left: 7px;
-   height: 75%;
-   min-width: 90px;
-   padding: 5px 5px;
-}
-
-#grafana_jwks_url {
-   margin: 0;
-   margin-left: 6px;
-}
-
-.grafana_field .grafana_input:focus {
-   border-color: #5897fb;
-}
-
-.grafana_field .select2-container ~ .grafana_label,
-.grafana_field .no-wrap ~ .grafana_label,
-.grafana_field .grafana_input:focus ~ .grafana_label,
-.grafana_field .grafana_input:required:not(:valid) ~ .grafana_label,
-.grafana_field .grafana_input:valid ~ .grafana_label {
-   top: -20px;
-}
-.grafana_field .grafana_input:focus ~ .grafana_label {
-   color: #5897fb;
-   font-weight: bold;
-}
-
-.grafana_config .submit {
-   margin: 10px auto;
+/* width limiter applied to inputs and input-groups */
+.grafana_control {
+    width: 50%;
+    min-width: 280px;
 }
 
 .grafana_config_block {
-   background-color: #F3F3F3;
-   padding: 10px;
-   margin-top: -15px;
-   height: fit-content;
+    background-color: var(--bs-secondary-bg);
+    padding: 1rem;
+    margin-top: -15px;
 }
 
-.grafana_config #actions .submit {
-   margin: 0 10px;
+.grafana_config_block > button[type="submit"] {
+    display: block;
+    margin: 1rem auto 0;
 }
 
-.grafana_config ul.grafana_folder_list {
-   list-style-type: none;
-   margin-left: 10px;
-   padding-left: 10px;
-   user-select: none;
-}
-
-.grafana_config ul.grafana_folder_list {
-}
-
-.grafana_config ul.grafana_folder_list label{
-   background-color: #EEE;
-   display: block;
-   padding: 10px;
-   margin-top: 2px;
-   cursor: pointer;
-}
-
-.grafana_config ul.grafana_folder_list label:before {
-   content: "\f054";
-   font-family:'FontAwesome';
-   margin-right: 4px;
-}
-
-.grafana_config ul.grafana_folder_list label.expanded:before {
-   content: "\f078";
-}
-
-.grafana_config ul.extract_list {
-   border: 2px solid #EEE;
-}
-
-.grafana_config ul.extract_list.extract_dashboards {
-   margin-left: 20px;
-}
-
-.grafana_config ul.extract_list li {
-   /* padding: 5px 10px; */
-}
-
-.grafana_config ul.extract_list li a {
-   color: #444;
-   padding: 5px 10px;
-}
-
-.grafana_config ul.extract_list li:nth-child(odd) {
-   background-color: #F8F8F8;
-}
-
-.grafana_config ul.extract_list li:hover {
-   background-color: #DDD;
-}
-
-.grafana_config ul.grafana_folder_list ul.extract_list {
-   display: none;
-}
-
-.grafana_config ul.grafana_folder_list label.expanded + ul.extract_list {
-   display: block;
-}
+/* ── dashboard iframe ────────────────────────────────────────────────────── */
 
 #grafana_iframe {
-   min-height: 1600px;
-   height: 99.9%;
-   width: 100%;
-   border: 0;
+    min-height: 1600px;
+    height: 99.9%;
+    width: 100%;
+    border: 0;
 }
 
-.grafana_field:has(#grafana_lightmode) {
-   width: 100%;
-   height: 40px;
-   /* border: 1px solid red; */
-   display: flex;
-   align-items: center;
+/* ── dashboard tree ──────────────────────────────────────────────────────── */
 
+.grafana-tree,
+.grafana-tree ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    user-select: none;
 }
 
-#grafana_lightmode {
-   margin-right: 10px;
+.grafana-tree ul {
+    padding-left: 1.25rem;
 }
 
-.grafana_field:has(#grafana_lightmode) > :nth-child(3) {
-   margin-top: 7px;
-   margin-left: 15px;
+.grafana-tree-folder > ul {
+    display: none;
 }
 
-.grafana_config .grafana_folder_list li:has(> a) {
-   margin: 2px 0;
-   /* padding: 5px 10px; */
-   background-color: #F8F8F8;
-   border: 1px solid #E1E1E1;
-   border-radius: 3px;
-   list-style-type: disc;
-   margin-left: 27px;
-   
+.grafana-tree-folder.expanded > ul {
+    display: block;
 }
 
-.grafana_config .grafana_folder_list li:hover {
-   background-color: #DDD;
+.grafana-folder-toggle {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    width: 100%;
+    background: var(--bs-secondary-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: .25rem;
+    padding: .45rem .75rem;
+    margin: 2px 0;
+    cursor: pointer;
+    text-align: left;
+    font-size: .9rem;
+    color: var(--bs-body-color);
 }
 
-.grafana_config .grafana_folder_list li a {
-   text-decoration: none;
-   color: #444;
-   font-weight: normal;
-   font-size: 1em;
-   display: block;
-   width: 100%;
-   height: 100%;
-   padding: 5px 10px;
-
+.grafana-folder-toggle:hover {
+    background: var(--bs-tertiary-bg);
 }
 
-div:has(> #grafana_lightmode) {
-   margin-top: -30px;
+.grafana-folder-arrow {
+    transition: transform .15s ease;
+    flex-shrink: 0;
 }
 
-div:has(> button[type="submit"]) {
-   text-align: center;
+.grafana-tree-folder.expanded > .grafana-folder-toggle .grafana-folder-arrow {
+    transform: rotate(90deg);
 }
 
+.grafana-dash-link {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .3rem .75rem;
+    margin: 2px 0;
+    border-radius: .25rem;
+    color: var(--bs-body-color);
+    text-decoration: none;
+    font-size: .9rem;
+}
+
+.grafana-dash-link:hover {
+    background: var(--bs-secondary-bg);
+    color: var(--bs-body-color);
+}
+
+/* ── JSON inspector modal ────────────────────────────────────────────────── */
+
+.grafana-json-pre {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: .375rem;
+    padding: .75rem 1rem;
+    font-size: .82em;
+    line-height: 1.55;
+    max-height: 40vh;
+    overflow: auto;
+    margin: 0;
+    color: #212529;
+}
+
+.grafana-json-pre .gj-key    { color: #5b21b6 !important; }
+.grafana-json-pre .gj-str    { color: #166534 !important; }
+.grafana-json-pre .gj-num    { color: #075985 !important; }
+.grafana-json-pre .gj-bool   { color: #92400e !important; font-weight: 600; }
+.grafana-json-pre .gj-null   { color: #6b7280 !important; font-style: italic; }

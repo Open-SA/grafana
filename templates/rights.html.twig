@@ -1,0 +1,230 @@
+{#
+ # -------------------------------------------------------------------------
+ # Grafana plugin for GLPI
+ # -------------------------------------------------------------------------
+ # Dashboard permissions management page.
+ #
+ # Variables:
+ #   dashboards          array        Each entry: {uuid, title, grants[]}
+ #                                    Grant entry: {id, actor_type, actor_id, actor_name}
+ #   api_error           array|null   Error from APIClient::getLastError() or null
+ #   actor_types         array        key => translated label (Profile/User/Group/Entity)
+ #   default_tab_actors  array        Each entry: {id, actor_type, actor_id, actor_name}
+ #   form_url            string       POST target (front/rights.php)
+ #   ajax_url            string       AJAX endpoint (ajax/rights.php)
+ #   config_url          string       URL back to the plugin config tab
+ # -------------------------------------------------------------------------
+ #}
+
+<div class="grafana_config">
+
+    <div class="d-flex align-items-center mb-3 gap-3">
+        <h1 class="mb-0 flex-grow-1">{{ __('Dashboard permissions', 'grafana') }}</h1>
+        <a href="{{ config_url }}" class="btn btn-outline-secondary btn-sm">
+            <i class="ti ti-arrow-left"></i>
+            {{ __('Back to configuration', 'grafana') }}
+        </a>
+    </div>
+
+    <p class="text-muted mb-4" style="font-size:.9em;">
+        {{ __('A dashboard is visible only to users that match at least one grant below. A dashboard with no grants is hidden from everyone.', 'grafana') }}
+    </p>
+
+    {% if api_error %}
+        <div class="alert alert-warning d-flex gap-2 align-items-start mb-4">
+            <i class="ti ti-alert-triangle fs-4 flex-shrink-0 mt-1"></i>
+            <div>
+                <strong>{{ __('Grafana API error — dashboard list could not be loaded', 'grafana') }}</strong>
+                {% if api_error.exception is defined %}
+                    <p class="mb-1 mt-1">{{ api_error.exception }}</p>
+                {% endif %}
+                {% if api_error.response is defined and api_error.response is not empty %}
+                    <details>
+                        <summary class="text-muted" style="cursor:pointer;font-size:.85em;">
+                            {{ __('Response preview', 'grafana') }}
+                        </summary>
+                        <pre class="mt-1 mb-0 p-2" style="font-size:.8em;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto;">{{ api_error.response }}</pre>
+                    </details>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+
+    {# ── Default central tab ────────────────────────────────────────────── #}
+    <div class="card mb-4">
+        <div class="card-header d-flex align-items-center gap-2">
+            <i class="ti ti-home"></i>
+            <strong>{{ __('Default central tab', 'grafana') }}</strong>
+        </div>
+        <div class="card-body">
+
+            <p class="text-muted mb-3" style="font-size:.9em;">
+                {{ __('Users that match any actor below will see the Grafana tab as their default home page tab on login.', 'grafana') }}
+            </p>
+
+            {# ── current default-tab actors ──────────────────────────── #}
+            {% if default_tab_actors is not empty %}
+                <table class="table table-sm table-hover mb-3">
+                    <thead>
+                        <tr>
+                            <th>{{ __('Type', 'grafana') }}</th>
+                            <th>{{ __('Name', 'grafana') }}</th>
+                            <th style="width:1%"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for actor in default_tab_actors %}
+                            <tr>
+                                <td>{{ actor_types[actor.actor_type] ?? actor.actor_type }}</td>
+                                <td>{{ actor.actor_name }}</td>
+                                <td>
+                                    <form method="post" action="{{ form_url }}" class="d-inline">
+                                        <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="default_tab_id" value="{{ actor.id }}">
+                                        <button type="submit" name="delete_default_tab" value="1"
+                                                class="btn btn-sm btn-outline-danger"
+                                                title="{{ __('Remove', 'grafana') }}">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="text-muted mb-3" style="font-size:.9em;">
+                    <i class="ti ti-eye-off me-1"></i>
+                    {{ __('No actors configured — Grafana tab will not be set as default for any user.', 'grafana') }}
+                </p>
+            {% endif %}
+
+            {# ── add default-tab actor form ──────────────────────────── #}
+            <form method="post" action="{{ form_url }}"
+                  class="d-flex gap-2 align-items-end flex-wrap grafana-add-grant">
+                <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+
+                <div>
+                    <label class="form-label form-label-sm mb-1">{{ __('Type', 'grafana') }}</label>
+                    <select name="actor_type"
+                            class="form-select form-select-sm grafana-actor-type"
+                            data-ajax-url="{{ ajax_url }}"
+                            data-target="grafana-actor-default-tab"
+                            required>
+                        <option value="">— {{ __('Select...', 'grafana') }} —</option>
+                        {% for type, label in actor_types %}
+                            <option value="{{ type }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="grafana-actor-default-tab" style="min-width:220px;">
+                    {# populated via AJAX on type change #}
+                </div>
+
+                <button type="submit" name="add_default_tab" value="1"
+                        class="btn btn-sm btn-primary">
+                    <i class="ti ti-plus"></i>
+                    {{ __('Add', 'grafana') }}
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    {# ── Per-dashboard grants ─────────────────────────────────────────── #}
+    {% if dashboards is empty %}
+        <div class="alert alert-warning">
+            <i class="ti ti-alert-triangle me-2"></i>
+            {{ __('No dashboards found. Check plugin configuration.', 'grafana') }}
+        </div>
+    {% else %}
+        {% for dashboard in dashboards %}
+            <div class="card mb-4">
+                <div class="card-header d-flex align-items-center gap-2">
+                    <i class="ti ti-chart-infographic flex-shrink-0"></i>
+                    <span class="flex-grow-1 min-w-0">
+                        {% if dashboard.folder_title %}
+                            <span class="text-muted">{{ dashboard.folder_title }}</span>
+                            <span class="text-muted mx-1">/</span>
+                        {% endif %}
+                        <strong>{{ dashboard.title }}</strong>
+                    </span>
+                    <code class="ms-auto text-muted flex-shrink-0" style="font-size:.8em;">{{ dashboard.uuid }}</code>
+                </div>
+                <div class="card-body">
+
+                    {# ── current grants ──────────────────────────────────── #}
+                    {% if dashboard.grants is not empty %}
+                        <table class="table table-sm table-hover mb-3">
+                            <thead>
+                                <tr>
+                                    <th>{{ __('Type', 'grafana') }}</th>
+                                    <th>{{ __('Name', 'grafana') }}</th>
+                                    <th style="width:1%"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for grant in dashboard.grants %}
+                                    <tr>
+                                        <td>{{ actor_types[grant.actor_type] ?? grant.actor_type }}</td>
+                                        <td>{{ grant.actor_name }}</td>
+                                        <td>
+                                            <form method="post" action="{{ form_url }}" class="d-inline">
+                                                <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+                                                <input type="hidden" name="grant_id" value="{{ grant.id }}">
+                                                <button type="submit" name="delete_grant" value="1"
+                                                        class="btn btn-sm btn-outline-danger"
+                                                        title="{{ __('Remove', 'grafana') }}">
+                                                    <i class="ti ti-trash"></i>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        <p class="text-muted mb-3" style="font-size:.9em;">
+                            <i class="ti ti-eye-off me-1"></i>
+                            {{ __('No grants — this dashboard is hidden from all users.', 'grafana') }}
+                        </p>
+                    {% endif %}
+
+                    {# ── add grant form ──────────────────────────────────── #}
+                    <form method="post" action="{{ form_url }}"
+                          class="d-flex gap-2 align-items-end flex-wrap grafana-add-grant">
+                        <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="dashboard_uuid" value="{{ dashboard.uuid }}">
+
+                        <div>
+                            <label class="form-label form-label-sm mb-1">{{ __('Type', 'grafana') }}</label>
+                            <select name="actor_type"
+                                    class="form-select form-select-sm grafana-actor-type"
+                                    data-ajax-url="{{ ajax_url }}"
+                                    data-target="grafana-actor-{{ loop.index }}"
+                                    required>
+                                <option value="">— {{ __('Select...', 'grafana') }} —</option>
+                                {% for type, label in actor_types %}
+                                    <option value="{{ type }}">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div id="grafana-actor-{{ loop.index }}" style="min-width:220px;">
+                            {# populated via AJAX on type change #}
+                        </div>
+
+                        <button type="submit" name="add_grant" value="1"
+                                class="btn btn-sm btn-primary">
+                            <i class="ti ti-plus"></i>
+                            {{ __('Add', 'grafana') }}
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+</div>

@@ -30,29 +30,21 @@
 
 include('../../../inc/includes.php');
 
-header('Content-Type: application/json');
-header('Cache-Control: no-store');
+Session::checkRight('config', UPDATE);
 
-$public_key_path = GLPI_PLUGIN_DOC_DIR . '/grafana/keys/public_key.pem';
+$type = $_POST['type'] ?? '';
 
-if (!file_exists($public_key_path)) {
-    header('HTTP/1.1 500 Internal Server Error', true, 500);
-    echo json_encode(['error' => 'RSA public key not found. Please reinstall the plugin.']);
-    return;
+switch ($type) {
+    case 'Profile':
+        Profile::dropdown(['name' => 'actor_id', 'display_emptychoice' => true]);
+        break;
+    case 'User':
+        User::dropdown(['name' => 'actor_id', 'right' => 'all', 'display_emptychoice' => true]);
+        break;
+    case 'Group':
+        Group::dropdown(['name' => 'actor_id', 'display_emptychoice' => true]);
+        break;
+    case 'Entity':
+        Entity::dropdown(['name' => 'actor_id', 'display_emptychoice' => true]);
+        break;
 }
-
-$details = openssl_pkey_get_details(openssl_pkey_get_public(file_get_contents($public_key_path)));
-
-$n = rtrim(strtr(base64_encode($details['rsa']['n']), '+/', '-_'), '=');
-$e = rtrim(strtr(base64_encode($details['rsa']['e']), '+/', '-_'), '=');
-
-echo json_encode([
-    'keys' => [[
-        'kty' => 'RSA',
-        'kid' => 'grafana-key-1',
-        'use' => 'sig',
-        'alg' => 'RS256',
-        'n'   => $n,
-        'e'   => $e,
-    ]],
-]);

@@ -32,6 +32,25 @@
  * - Added code for clipboard copy button
  */
 
+function grafanaHighlightJson(pre) {
+   var raw = pre.textContent;
+   pre.innerHTML = raw
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(
+         /("(?:\\u[0-9a-fA-F]{4}|\\[^u]|[^\\"])*"(\s*:)?|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+-]?\d+)?)/g,
+         function(m) {
+            if (/^"/.test(m)) {
+               return /:$/.test(m)
+                  ? '<span class="gj-key">' + m + '</span>'
+                  : '<span class="gj-str">' + m + '</span>';
+            }
+            if (m === 'true' || m === 'false') return '<span class="gj-bool">' + m + '</span>';
+            if (m === 'null')                  return '<span class="gj-null">' + m + '</span>';
+            return '<span class="gj-num">' + m + '</span>';
+         }
+      );
+}
+
 $(function() {
 
    // do like a jquery toggle but based on a parameter
@@ -45,8 +64,8 @@ $(function() {
       }
    };
 
-   $(document).on("click", ".grafana_folder_list label", function() {
-      $(this).toggleClass('expanded');
+   $(document).on("click", ".grafana-folder-toggle", function() {
+      $(this).closest('.grafana-tree-folder').toggleClass('expanded');
    });
 
    $(document).on("click", "a.extract", function() {
@@ -54,26 +73,52 @@ $(function() {
       var type = $(this).data('type');
       glpi_ajax_dialog({
          dialogclass: 'modal-lg',
-         url: CFG_GLPI.root_doc + '/' + GLPI_PLUGINS_PATH.grafana + '/ajax/extract_json.php',
+         url: CFG_GLPI.root_doc + GLPI_PLUGINS_PATH.grafana + '/ajax/extract_json.php',
          params: {
             uid: uid,
             type: type
+         },
+         done: function() {
+            var pre = document.getElementById('grafana-json-output');
+            if (pre) {
+               grafanaHighlightJson(pre);
+            }
          }
       });
    });
 
+   $(document).on('change', '.grafana-actor-type', function() {
+      var type    = $(this).val();
+      var targetId = '#' + $(this).data('target');
+      var ajaxUrl  = $(this).data('ajax-url');
+
+      $(targetId).html('');
+      if (!type) {
+         return;
+      }
+      $(targetId).load(ajaxUrl, { type: type });
+   });
+
+   $(document).on('click', '#toggle_password', function() {
+      var input = document.getElementById('grafanaconfig_password');
+      var icon  = document.getElementById('password_eye_icon');
+      if (input.type === 'password') {
+         input.type      = 'text';
+         icon.className  = 'ti ti-eye-off';
+      } else {
+         input.type      = 'password';
+         icon.className  = 'ti ti-eye';
+      }
+   });
+
    $(document).on('click', '#copy_clipboard', function() {
-      navigator.clipboard.writeText(document.getElementById("grafana_jwks_url").textContent)
+      var jwksInput = document.getElementById("grafana_jwks_url");
+      navigator.clipboard.writeText(jwksInput.value)
          .then(() => {
-            var range = document.createRange();
-            var selection = window.getSelection();
-            range.selectNodeContents(document.getElementById("grafana_jwks_url"));
-            selection.removeAllRanges();
-            selection.addRange(range);
+            jwksInput.select();
 
-            copied_text = document.getElementById("translated_copied").value;
-            copy_text = document.getElementById("translated_copy").value;
-
+            var copied_text = document.getElementById("translated_copied").value;
+            var copy_text   = document.getElementById("translated_copy").value;
 
             document.getElementById("button_text").innerText = copied_text;
             document.getElementById("button_icon").className = "ti ti-check";
@@ -83,7 +128,7 @@ $(function() {
                document.getElementById("button_text").innerText = copy_text;
                document.getElementById("button_icon").className = "ti ti-clipboard";
                document.getElementById("copy_clipboard").classList.remove("btn-success");
-               selection.removeAllRanges();
+               jwksInput.blur();
             }, 4000);
 
          })
