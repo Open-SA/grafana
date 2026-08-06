@@ -6,22 +6,31 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: grafana\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-11 16:30-0300\n"
+"POT-Creation-Date: 2026-08-06 00:00-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: front/config.form.php:87
+#: front/config.form.php:95
+msgid "Unknown error"
+msgstr ""
+
+#: front/config.form.php:97
+#, php-format
+msgid "Configuration saved, but Grafana theme sync failed: %s"
+msgstr ""
+
+#: front/config.form.php:103
 msgid "Configuration saved successfully"
 msgstr ""
 
-#: front/config.form.php:93
+#: front/config.form.php:108
 msgid "Theres been some kind of error"
 msgstr ""
 
@@ -29,120 +38,259 @@ msgstr ""
 msgid "Grafana collections"
 msgstr ""
 
-#: front/dashboards.php:48
-msgid "Reports and dashboards specifications"
-msgstr ""
-
-#: front/dashboards.php:66
-msgid "Listing:"
-msgstr ""
-
-#: front/dashboards.php:70
-msgid "Unable to access dashboards data. Please check plugin configuration."
-msgstr ""
-
-#: front/profileright.form.php:53 front/profileright.form.php:77
+#: front/profileright.form.php:52 front/profileright.form.php:80
 msgid "Invalid request."
 msgstr ""
 
-#: front/selfservice.php:43 src/Config.php:56 src/Profileright.php:61
+#: front/rights.php:82
+msgid "Grafana dashboard permissions"
+msgstr ""
+
+#: front/selfservice.php:42 src/Config.php:51 src/Profileright.php:61
 msgid "Grafana"
 msgstr ""
 
-#: src/APIClient.php:70
+#: src/APIClient.php:69
 msgid "API: login"
 msgstr ""
 
-#: src/APIClient.php:184
-msgid "No auto-generated GLPI database found"
-msgstr ""
-
-#: src/APIClient.php:274
-msgid "Type"
-msgstr ""
-
-#: src/APIClient.php:278
-msgid "Incident"
-msgstr ""
-
-#: src/APIClient.php:279
-msgid "Request"
-msgstr ""
-
-#: src/APIClient.php:296
-msgid "Status"
-msgstr ""
-
-#: src/APIClient.php:550
+#: src/APIClient.php:205
 msgid ""
 "Query to grafana failed because operation timed out. Maybe you should "
 "increase the timeout value in plugin configuration"
 msgstr ""
 
-#: src/Config.php:112
-msgid "Grafana plugin configuration"
+#: src/Config.php:185
+msgid "User ID"
 msgstr ""
 
-#: src/Config.php:121
-msgid "Grafana URL"
+#: src/Config.php:186
+msgid "Username (login)"
 msgstr ""
 
-#: src/Config.php:131
-msgid "Grafana Username"
-msgstr ""
-
-#: src/Config.php:141
-msgid "Grafana Password"
-msgstr ""
-
-#: src/Config.php:151
-msgid "JWKS url"
-msgstr ""
-
-#: src/Config.php:160
-msgid "Grafana light mode theme"
-msgstr ""
-
-#: src/Config.php:169
-msgid "Language test"
-msgstr ""
-
-#: src/Config.php:171 src/Config.php:302
-msgid "Copy"
-msgstr ""
-
-#: src/Config.php:172
-msgid "Copied!"
+#: src/Config.php:187
+msgid "First name"
 msgstr ""
 
 #: src/Config.php:188
-msgid "API status"
+msgid "Last name"
 msgstr ""
 
-#: src/Config.php:207
-msgid "Last Error"
+#: src/Config.php:189
+msgid "Active entity ID"
 msgstr ""
 
-#: src/Config.php:220
-msgid "Action(s)"
+#: src/Config.php:190
+msgid "Active entity name"
 msgstr ""
 
-#: src/Config.php:226
-msgid "Show reports and dashboards specifications"
+#: src/Config.php:191
+msgid "All active entity IDs (comma-separated)"
+msgstr ""
+
+#: src/Config.php:192
+msgid "Active profile ID"
+msgstr ""
+
+#: src/Config.php:193
+msgid "Active profile name"
+msgstr ""
+
+#: src/Config.php:194
+msgid "Groups (comma-separated IDs)"
+msgstr ""
+
+#: src/Config.php:195
+msgid "Language"
 msgstr ""
 
 #: src/Dashboard.php:63
 msgid "Grafana dashboard"
 msgstr ""
 
-#: src/Profileright.php:114
+#: src/DashboardRight.php:41
+msgid "Grafana dashboard rights"
+msgstr ""
+
+#: src/DashboardRight.php:52
+msgid "Profile"
+msgstr ""
+
+#: src/DashboardRight.php:53
+msgid "User"
+msgstr ""
+
+#: src/DashboardRight.php:54
+msgid "Group"
+msgstr ""
+
+#: src/DashboardRight.php:55
+msgid "Entity"
+msgstr ""
+
+#: templates/config.html.twig:20
+msgid "Grafana plugin configuration"
+msgstr ""
+
+#: templates/config.html.twig:23
+msgid "Manage dashboard permissions"
+msgstr ""
+
+#: templates/config.html.twig:35
+msgid "Grafana URL"
+msgstr ""
+
+#: templates/config.html.twig:48
+msgid "Grafana Username"
+msgstr ""
+
+#: templates/config.html.twig:60
+msgid "Grafana Password"
+msgstr ""
+
+#: templates/config.html.twig:77
+msgid "JWKS url"
+msgstr ""
+
+#: templates/config.html.twig:84
+msgid "Copy"
+msgstr ""
+
+#: templates/config.html.twig:105
+msgid "Copied!"
+msgstr ""
+
+#: templates/config.html.twig:68
+msgid "Show/hide password"
+msgstr ""
+
+#: templates/config.html.twig:98
+msgid "Grafana light mode theme"
+msgstr ""
+
+#: templates/config.html.twig:119
+msgid "GLPI context variables for Grafana"
+msgstr ""
+
+#: templates/config.html.twig:128
+msgid ""
+"Selected fields are appended to the Grafana iframe URL as dashboard "
+"variables (var-&lt;key&gt;=&lt;value&gt;). Configure matching variables in "
+"each Grafana dashboard."
+msgstr ""
+
+#: templates/config.html.twig:158
+msgid "API status"
+msgstr ""
+
+#: templates/config.html.twig:169
+msgid "Last Error"
+msgstr ""
+
+#: templates/config.html.twig:182
+msgid "Action(s)"
+msgstr ""
+
+#: templates/config.html.twig:186
+msgid "Show reports and dashboards specifications"
+msgstr ""
+
+#: templates/dashboard.html.php:27 templates/dashboard_json.html.twig:27
+#: templates/dashboards.html.twig:25
+msgid "Grafana API error"
+msgstr ""
+
+#: templates/dashboard.html.php:34 templates/dashboard_json.html.twig:34
+#: templates/dashboards.html.php:32 templates/rights.html.twig:44
+msgid "Response preview"
+msgstr ""
+
+#: templates/dashboard.html.twig:43
+msgid "Grafana plugin: RSA keys not found. Please reinstall the plugin."
+msgstr ""
+
+#: templates/dashboard_json.html.twig:50
+msgid "Key"
+msgstr ""
+
+#: templates/dashboard_json.html.twig:51
+msgid "Value"
+msgstr ""
+
+#: templates/dashboards.html.twig:18
+msgid "Reports and dashboards specifications"
+msgstr ""
+
+#: templates/dashboards.html.twig:49
+msgid "Unable to access dashboards data. Please check plugin configuration."
+msgstr ""
+
+#: templates/profileright.html.twig:31
 msgid "Rights management"
 msgstr ""
 
-#: src/Profileright.php:123
+#: templates/profileright.html.twig:40
 msgid "Allow access to all"
 msgstr ""
 
-#: src/Profileright.php:128
+#: templates/profileright.html.twig:46
 msgid "Disallow access to all"
+msgstr ""
+
+#: templates/rights.html.twig:22
+msgid "Dashboard permissions"
+msgstr ""
+
+#: templates/rights.html.twig:25
+msgid "Back to configuration"
+msgstr ""
+
+#: templates/rights.html.twig:30
+msgid ""
+"A dashboard is visible only to users that match at least one grant below. A "
+"dashboard with no grants is hidden from everyone."
+msgstr ""
+
+#: templates/rights.html.twig:37
+msgid "Grafana API error — dashboard list could not be loaded"
+msgstr ""
+
+#: templates/rights.html.twig:57
+msgid "Default central tab"
+msgstr ""
+
+#: templates/rights.html.twig:62
+msgid ""
+"Users that match any actor below will see the Grafana tab as their default "
+"home page tab on login."
+msgstr ""
+
+#: templates/rights.html.php:70 templates/rights.html.twig:108
+#: templates/rights.html.php:162 templates/rights.html.twig:201
+msgid "Type"
+msgstr ""
+
+#: templates/rights.html.php:71 templates/rights.html.twig:163
+msgid "Name"
+msgstr ""
+
+#: templates/rights.html.twig:98
+msgid ""
+"No actors configured — Grafana tab will not be set as default for any user."
+msgstr ""
+
+#: templates/rights.html.php:114 templates/rights.html.twig:207
+msgid "Select..."
+msgstr ""
+
+#: templates/rights.html.php:128 templates/rights.html.twig:221
+msgid "Add"
+msgstr ""
+
+#: templates/rights.html.twig:139
+msgid "No dashboards found. Check plugin configuration."
+msgstr ""
+
+#: templates/rights.html.twig:190
+msgid "No grants — this dashboard is hidden from all users."
 msgstr ""
