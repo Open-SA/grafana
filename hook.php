@@ -49,7 +49,7 @@ function plugin_grafana_install()
     $default_key_sign = DBConnection::getDefaultPrimaryKeySignOption();
 
     $newTable = DashboardRight::getTable();
-    $oldTable = 'glpi_plugin_grafana_profilrights';
+    $oldTable = 'glpi_plugin_grafana_profilerights';
 
     if (!$DB->tableExists($newTable)) {
         $migration->displayMessage("Installing $newTable");
@@ -63,17 +63,17 @@ function plugin_grafana_install()
                      UNIQUE KEY `dashboard_uuid_actor` (`dashboard_uuid`, `actor_type`, `actor_id`)
                   ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=DYNAMIC;";
         $DB->doQuery($query);
+    }
 
-        if ($DB->tableExists($oldTable)) {
-            $migration->displayMessage("Migrating profile rights from $oldTable to $newTable");
-            $DB->doQuery("
-                INSERT IGNORE INTO `$newTable` (`dashboard_uuid`, `actor_type`, `actor_id`)
-                SELECT `dashboard_uuid`, 'Profile', `profiles_id`
-                FROM `$oldTable`
-                WHERE (`rights` & 1) > 0
-            ");
-            $DB->doQuery("DROP TABLE `$oldTable`");
-        }
+    if ($DB->tableExists($oldTable)) {
+        $migration->displayMessage("Migrating profile rights from $oldTable to $newTable");
+        $DB->doQuery("
+            INSERT IGNORE INTO `$newTable` (`dashboard_uuid`, `actor_type`, `actor_id`)
+            SELECT `dashboard_uuid`, 'Profile', `profiles_id`
+            FROM `$oldTable`
+            WHERE (`rights` & 1) > 0
+        ");
+        $DB->doQuery("DROP TABLE `$oldTable`");
     }
 
     // Default tab actors table — added in 1.3.0, runs on upgrade too
@@ -161,7 +161,7 @@ function plugin_grafana_uninstall()
 
     $DB->doQuery('DROP TABLE IF EXISTS `' . DashboardRight::getTable() . '`');
     $DB->doQuery('DROP TABLE IF EXISTS `glpi_plugin_grafana_defaulttabs`');
-    $DB->doQuery('DROP TABLE IF EXISTS `glpi_plugin_grafana_profilrights`');
+    $DB->doQuery('DROP TABLE IF EXISTS `glpi_plugin_grafana_profilerights`');
 
 
     return true;
