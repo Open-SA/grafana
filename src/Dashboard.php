@@ -162,10 +162,9 @@ class Dashboard extends CommonDBTM
             ],
         );
 
-        $private_key_path = GLPI_PLUGIN_DOC_DIR . '/grafana/keys/private_key.pem';
-        $public_key_path  = GLPI_PLUGIN_DOC_DIR . '/grafana/keys/public_key.pem';
+        $config = Config::getConfig();
 
-        if (!file_exists($private_key_path) || !file_exists($public_key_path)) {
+        if (empty($config['private_key']) || empty($config['public_key'])) {
             TemplateRenderer::getInstance()->display('@grafana/dashboard.html.twig', [
                 'dropdown'     => $dropdown,
                 'keys_missing' => true,
@@ -173,9 +172,8 @@ class Dashboard extends CommonDBTM
             return;
         }
 
-        $config      = Config::getConfig();
-        $private_key = file_get_contents($private_key_path);
-        $public_key  = file_get_contents($public_key_path);
+        $private_key = (new \GLPIKey())->decrypt($config['private_key']);
+        $public_key  = $config['public_key'];
 
         $signer_config = Configuration::forAsymmetricSigner(
             new Sha256(),

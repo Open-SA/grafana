@@ -91,7 +91,7 @@ function plugin_init_grafana()
     Plugin::registerClass(Dashboard::class, ['addtabon' => 'Central']);
 
     // Encryption
-    $PLUGIN_HOOKS['secured_configs']['grafana'] = ['password'];
+    $PLUGIN_HOOKS['secured_configs']['grafana'] = ['password', 'private_key'];
 
     // Default central tab — applied once per login session
     $PLUGIN_HOOKS['post_init']['grafana'] = 'plugin_grafana_post_init';

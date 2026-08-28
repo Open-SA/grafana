@@ -52,17 +52,14 @@ use GlpiPlugin\Grafana\Config;
 
 $config = Config::getConfig();
 
-$private_key_path = GLPI_PLUGIN_DOC_DIR . '/grafana/keys/private_key.pem';
-$public_key_path  = GLPI_PLUGIN_DOC_DIR . '/grafana/keys/public_key.pem';
-
-if (!file_exists($private_key_path) || !file_exists($public_key_path)) {
+if (empty($config['private_key']) || empty($config['public_key'])) {
     header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
     echo json_encode(['error' => 'RSA keys not found. Please reinstall the plugin.']);
     return;
 }
 
-$private_key = file_get_contents($private_key_path);
-$public_key  = file_get_contents($public_key_path);
+$private_key = (new GLPIKey())->decrypt($config['private_key']);
+$public_key  = $config['public_key'];
 
 
 $signer_config = Configuration::forAsymmetricSigner(
