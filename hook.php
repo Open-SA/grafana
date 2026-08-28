@@ -98,9 +98,10 @@ function plugin_grafana_install()
     $existing = GlpiConfig::getConfigurationValues('plugin:grafana');
     foreach (
         [
-            'url'      => '',
-            'token'    => '',
-            'username' => '',
+            'url'            => '',
+            'token'          => '',
+            'username'       => '',
+            'token_lifetime' => 10,
         ] as $key => $default
     ) {
         if (!array_key_exists($key, $existing)) {

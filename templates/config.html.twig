@@ -146,6 +146,20 @@
                 </div>
             </div>
 
+            {# --- Token lifetime --- #}
+            <div class="grafana_field">
+                <label class="grafana_label" for="grafanaconfig_token_lifetime">
+                    {{ __('JWT token lifetime (minutes)', 'grafana') }}
+                </label>
+                <input type="number" name="token_lifetime"
+                       value="{{ current_config.token_lifetime ?? 10 }}"
+                       min="3"
+                       class="form-control grafana_control"
+                       id="grafanaconfig_token_lifetime"
+                       style="max-width:100px;">
+                <small class="text-muted">{{ __('Minimum 3 minutes. Shorter values reduce the exposure window if a token is leaked, but increase refresh frequency.', 'grafana') }}</small>
+            </div>
+
             {# Hidden inputs for clipboard JS translations #}
             <input type="hidden" name="copy"   id="translated_copy"   value="{{ __('Copy', 'grafana') }}">
             <input type="hidden" name="copied" id="translated_copied" value="{{ __('Copied!', 'grafana') }}">
