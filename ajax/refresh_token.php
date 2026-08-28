@@ -77,7 +77,7 @@ $token = $signer_config->builder()
     ->issuedBy('glpi_plugin')
     ->permittedFor(rtrim($config['url'], '/'))
     ->identifiedBy(bin2hex(random_bytes(16)))
-    ->expiresAt($now->modify('+2 minutes'))
+    ->expiresAt($now->modify('+' . max(3, (int) $config['token_lifetime']) . ' minutes'))
     ->relatedTo($config['username'])
     ->withHeader('kid', 'grafana-key-1')
     ->getToken($signer_config->signer(), $signer_config->signingKey());

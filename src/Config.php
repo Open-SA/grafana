@@ -170,6 +170,10 @@ class Config extends CommonDBTM
             }
         }
 
+        if (isset($input['token_lifetime'])) {
+            $input['token_lifetime'] = max(3, (int) $input['token_lifetime']);
+        }
+
         return $input;
     }
 
