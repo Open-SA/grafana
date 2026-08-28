@@ -109,41 +109,50 @@ function plugin_grafana_install()
         }
     }
 
-    $keysDir = GLPI_PLUGIN_DOC_DIR . '/grafana/keys';
+    // Migrate keys from files to DB if needed, or generate a new pair
+    $existing = GlpiConfig::getConfigurationValues('plugin:grafana');
+    if (empty($existing['private_key']) || empty($existing['public_key'])) {
+        $keysDir          = GLPI_PLUGIN_DOC_DIR . '/grafana/keys';
+        $private_key_path = $keysDir . '/private_key.pem';
+        $public_key_path  = $keysDir . '/public_key.pem';
 
-    if (!is_dir($keysDir) && !mkdir($keysDir, 0755, true)) {
-        $migration->displayWarning("Grafana plugin: could not create keys directory: $keysDir");
-        return false;
-    }
+        if (file_exists($private_key_path) && file_exists($public_key_path)) {
+            $migration->displayMessage('Grafana plugin: migrating RSA keys from files to database');
+            $private_key = file_get_contents($private_key_path);
+            $public_key  = file_get_contents($public_key_path);
+        } else {
+            $migration->displayMessage('Grafana plugin: generating RSA key pair');
+            $key_pair = openssl_pkey_new([
+                'private_key_bits' => 2048,
+                'private_key_type' => OPENSSL_KEYTYPE_RSA,
+            ]);
+            if ($key_pair === false) {
+                $migration->displayWarning('Grafana plugin: could not generate RSA key pair. ' . openssl_error_string());
+                return false;
+            }
+            openssl_pkey_export($key_pair, $private_key);
+            $public_key = openssl_pkey_get_details($key_pair)['key'];
+        }
 
-    $private_key_path = $keysDir . '/private_key.pem';
-    $public_key_path = $keysDir . '/public_key.pem';
+        GlpiConfig::setConfigurationValues('plugin:grafana', [
+            'private_key' => (new GLPIKey())->encrypt($private_key),
+            'public_key'  => $public_key,
+        ]);
 
-    if (file_exists($private_key_path) && file_exists($public_key_path)) {
-        return true;
-    }
-
-    $key_pair = openssl_pkey_new([
-        'private_key_bits' => 2048,
-        'private_key_type' => OPENSSL_KEYTYPE_RSA,
-    ]);
-
-    if ($key_pair === false) {
-        $migration->displayWarning('Grafana plugin: could not generate RSA key pair. ' . openssl_error_string());
-        return false;
-    }
-
-    openssl_pkey_export($key_pair, $private_key);
-    if (file_put_contents($private_key_path, $private_key) === false) {
-        $migration->displayWarning("Grafana plugin: could not write private key to $private_key_path");
-        return false;
-    }
-
-    $keyDetails = openssl_pkey_get_details($key_pair);
-    $public_key = $keyDetails['key'];
-    if (file_put_contents($public_key_path, $public_key) === false) {
-        $migration->displayWarning("Grafana plugin: could not write public key to $public_key_path");
-        return false;
+        // Clean up legacy key files
+        if (file_exists($private_key_path)) {
+            unlink($private_key_path);
+        }
+        if (file_exists($public_key_path)) {
+            unlink($public_key_path);
+        }
+        $legacyParent = GLPI_PLUGIN_DOC_DIR . '/grafana';
+        if (is_dir($keysDir) && count(scandir($keysDir)) === 2) {
+            rmdir($keysDir);
+        }
+        if (is_dir($legacyParent) && count(scandir($legacyParent)) === 2) {
+            rmdir($legacyParent);
+        }
     }
 
     return true;
@@ -163,6 +172,22 @@ function plugin_grafana_uninstall()
     $DB->doQuery('DROP TABLE IF EXISTS `' . DashboardRight::getTable() . '`');
     $DB->doQuery('DROP TABLE IF EXISTS `glpi_plugin_grafana_defaulttabs`');
     $DB->doQuery('DROP TABLE IF EXISTS `glpi_plugin_grafana_profilerights`');
+
+    // Clean up legacy key files if they were not migrated to the database
+    $keysDir = GLPI_PLUGIN_DOC_DIR . '/grafana/keys';
+    foreach (['private_key.pem', 'public_key.pem'] as $file) {
+        $path = $keysDir . '/' . $file;
+        if (file_exists($path)) {
+            unlink($path);
+        }
+    }
+    if (is_dir($keysDir) && count(scandir($keysDir)) === 2) {
+        rmdir($keysDir);
+    }
+    $legacyDir = GLPI_PLUGIN_DOC_DIR . '/grafana';
+    if (is_dir($legacyDir) && count(scandir($legacyDir)) === 2) {
+        rmdir($legacyDir);
+    }
 
 
     return true;
