@@ -186,7 +186,9 @@ class Dashboard extends CommonDBTM
         $now   = new DateTimeImmutable();
         $token = $signer_config->builder()
             ->issuedBy('glpi_plugin')
-            ->expiresAt($now->modify('+1 hour'))
+            ->permittedFor(rtrim($config['url'], '/'))
+            ->identifiedBy(bin2hex(random_bytes(16)))
+            ->expiresAt($now->modify('+2 minutes'))
             ->relatedTo($config['username'])
             ->withHeader('kid', 'grafana-key-1')
             ->getToken($signer_config->signer(), $signer_config->signingKey());
