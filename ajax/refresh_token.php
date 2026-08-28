@@ -72,14 +72,15 @@ $signer_config = Configuration::forAsymmetricSigner(
 );
 
 
-// Create the token
-$now = new DateTimeImmutable();
+$now   = new DateTimeImmutable();
 $token = $signer_config->builder()
-    ->issuedBy("glpi_plugin") // Configures the issuer (iss claim)
-    ->expiresAt($now->modify('+1 hour')) // Expires after an hour
-    ->relatedTo($config['username']) // Sub claim with the username of the user in the config
-    ->withHeader('kid', 'grafana-key-1') // Kinda selects the public key to use Grafana side
-    ->getToken($signer_config->signer(), $signer_config->signingKey()); // Retrieves the generated token
+    ->issuedBy('glpi_plugin')
+    ->permittedFor(rtrim($config['url'], '/'))
+    ->identifiedBy(bin2hex(random_bytes(16)))
+    ->expiresAt($now->modify('+2 minutes'))
+    ->relatedTo($config['username'])
+    ->withHeader('kid', 'grafana-key-1')
+    ->getToken($signer_config->signer(), $signer_config->signingKey());
 
 echo json_encode([
     'token' => $token->toString(),

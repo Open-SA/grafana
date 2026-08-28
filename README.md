@@ -33,8 +33,22 @@ Most parameters are self-explanatory, but here are a few key points:
 
 ### Permissions configuration
 
-Once everything is configured correctly, you can define which dashboards a user profile can see from the **Profiles** configuration page in GLPI.
-![profiles](./docs/screenshots/profileConfigEn.png "Profile configuration")
+Once everything is configured, click the **Permissions** button on the plugin configuration page to open the permissions management page.
+
+From there you can assign dashboard access individually to users, groups, profiles, or entities. Each entry lets you select which specific dashboards are visible.
+
+![Permissions page](./docs/screenshots/permissionsPageEn.png "Permissions management page")
+![Permissions entry](./docs/screenshots/permissionsEntryEn.png "Adding a permissions entry")
+
+### Security model
+
+> **Important:** The per-dashboard grants described above are a **display filter inside GLPI only**. The real security boundary in Grafana is the permission set of the Grafana service account configured in the plugin.
+>
+> Any GLPI user who holds at least one dashboard grant will authenticate to Grafana as that shared service account. From Grafana's perspective, all of them are the same user, and they can potentially access any dashboard, folder, or data source that the service account can reach — not just the ones granted in GLPI.
+>
+> To reduce the exposure surface, configure the Grafana service account with the minimum permissions it needs: grant it access only to the folders and dashboards you intend to show inside GLPI, and nothing else.
+
+---
 
 ## Español
 
@@ -69,6 +83,15 @@ La mayoría de los parámetros son autoexplicativos, algunas notas:
 
 ### Configuración de permisos
 
-Una vez que todo esté configurado correctamente, se puede definir qué paneles puede ver cada perfil de usuario desde la página de configuración de **Perfiles** en GLPI.
+Desde ahí se puede asignar acceso a paneles individualmente a usuarios, grupos, perfiles o entidades. Cada entrada permite seleccionar qué paneles específicos son visibles.
 
-![profiles](./docs/screenshots/profileConfig.png "Configuración de perfil")
+![Página de permisos](./docs/screenshots/permissionsPage.png "Página de gestión de permisos")
+![Entrada de permisos](./docs/screenshots/permissionsEntry.png "Agregar una entrada de permisos")
+
+### Modelo de seguridad
+
+> **Importante:** Los permisos por panel descritos arriba son únicamente un **filtro de visualización dentro de GLPI**. El límite de seguridad real en Grafana es el conjunto de permisos de la cuenta de servicio de Grafana configurada en el plugin.
+>
+> Cualquier usuario de GLPI que tenga al menos un permiso de panel se autenticará en Grafana como esa cuenta de servicio compartida. Desde el punto de vista de Grafana, todos son el mismo usuario, y potencialmente pueden acceder a cualquier panel, carpeta o fuente de datos que la cuenta de servicio pueda ver — no solo los habilitados en GLPI.
+>
+> Para reducir la exposición, configurar la cuenta de servicio de Grafana con los permisos mínimos necesarios: otorgarle acceso solo a las carpetas y paneles que se quieran mostrar dentro de GLPI, y nada más.
