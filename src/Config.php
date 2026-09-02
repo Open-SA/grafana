@@ -174,6 +174,15 @@ class Config extends CommonDBTM
             $input['token_lifetime'] = max(3, (int) $input['token_lifetime']);
         }
 
+        if (!empty($input['url']) && !\Toolbox::isValidWebUrl($input['url'])) {
+            \Session::addMessageAfterRedirect(
+                __('Invalid Grafana URL: must be a valid http or https URL.', 'grafana'),
+                false,
+                ERROR
+            );
+            unset($input['url']);
+        }
+
         return $input;
     }
 

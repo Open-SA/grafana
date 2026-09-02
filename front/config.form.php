@@ -67,6 +67,17 @@ if (isset($_REQUEST["empty_button"])) {
     if (!empty($_POST['password'])) {
         $input['password'] = $_POST['password'];
     }
+
+    if (!empty($input['url']) && !Toolbox::isValidWebUrl($input['url'])) {
+        Session::addMessageAfterRedirect(
+            __('Invalid Grafana URL: must be a valid http or https URL.', 'grafana'),
+            false,
+            ERROR
+        );
+        $url = Toolbox::getItemTypeFormURL('Config') . "?forcetab=" . urlencode(GrafanaConfig::class . '$1');
+        Html::redirect($url);
+    }
+
     Config::setConfigurationValues('plugin:grafana', $input);
 
     $mode = ($input['lightmode'] ?? 0) ? 'light' : 'dark';

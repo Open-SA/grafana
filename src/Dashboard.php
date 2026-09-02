@@ -196,6 +196,16 @@ class Dashboard extends CommonDBTM
         }));
         $dashboardUrl = $currentDashboard['url'];
         $url          = rtrim($config['url'], '/');
+
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        if (!in_array($scheme, ['http', 'https'], true)) {
+            TemplateRenderer::getInstance()->display('@grafana/dashboard.html.twig', [
+                'dropdown'  => $dropdown,
+                'api_error' => ['exception' => __('Invalid Grafana URL configured: must use http or https.', 'grafana')],
+            ]);
+            return;
+        }
+
         if (strpos($dashboardUrl, '/d/') !== 0) {
             $dashboardUrl = substr($dashboardUrl, strpos($dashboardUrl, '/d/'));
         }
