@@ -29,15 +29,10 @@
         }
     },
     "scripts": {
-        "post-install-cmd": [
+        "setup-dev": [
             "git config core.hooksPath .git-hooks",
             "chmod +x .git-hooks/pre-commit",
-            "echo 'Git hooks configured \\n';"
-        ],
-        "post-update-cmd": [
-            "git config core.hooksPath .git-hooks",
-            "chmod +x .git-hooks/pre-commit",
-            "echo 'Git hooks configured \\n';"
+            "echo 'Git hooks configured';"
         ]
     }
 }
