@@ -34,6 +34,8 @@ use Glpi\Application\View\TemplateRenderer;
 
 include('../../../inc/includes.php');
 
+Session::checkRight('config', READ);
+
 Html::header(
     __('Grafana collections', 'grafana'),
     $_SERVER['PHP_SELF'],
@@ -41,8 +43,6 @@ Html::header(
     'config',
     'collections',
 );
-
-Session::checkRight('config', READ);
 
 $tree       = [];
 $api_errors = [];
