@@ -28,33 +28,37 @@
  * -------------------------------------------------------------------------
  */
 
-include('../../../inc/includes.php');
+namespace GlpiPlugin\Grafana;
 
-use GlpiPlugin\Grafana\DashboardRight;
+use DateTimeImmutable;
+use GLPIKey;
+use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Signer\Key\InMemory;
+use Lcobucci\JWT\Signer\Rsa\Sha256;
 
-Session::checkLoginUser();
+class Token
+{
+    public static function mint(array $config): string
+    {
+        $private_key = (new GLPIKey())->decrypt($config['private_key']);
+        $public_key  = $config['public_key'];
 
-if (!DashboardRight::canUserViewDashboards((int) Session::getLoginUserID())) {
-    header('HTTP/1.1 403 Forbidden', true, 403);
-    echo json_encode([
-        'error' => 'You don\'t have permission to view dashboards',
-    ]);
-    return;
+        $signer_config = Configuration::forAsymmetricSigner(
+            new Sha256(),
+            InMemory::plainText($private_key),
+            InMemory::plainText($public_key),
+        );
+
+        $now   = new DateTimeImmutable();
+        $token = $signer_config->builder()
+            ->issuedBy('glpi_plugin')
+            ->permittedFor(rtrim($config['url'], '/'))
+            ->identifiedBy(bin2hex(random_bytes(16)))
+            ->expiresAt($now->modify('+' . max(3, (int) $config['token_lifetime']) . ' minutes'))
+            ->relatedTo($config['username'])
+            ->withHeader('kid', 'grafana-key-1')
+            ->getToken($signer_config->signer(), $signer_config->signingKey());
+
+        return $token->toString();
+    }
 }
-
-header('Content-Type: application/json');
-
-use GlpiPlugin\Grafana\Config;
-use GlpiPlugin\Grafana\Token;
-
-$config = Config::getConfig();
-
-if (empty($config['private_key']) || empty($config['public_key'])) {
-    header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
-    echo json_encode(['error' => 'RSA keys not found. Please reinstall the plugin.']);
-    return;
-}
-
-echo json_encode([
-    'token' => Token::mint($config),
-]);
