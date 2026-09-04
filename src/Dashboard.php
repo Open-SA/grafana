@@ -36,21 +36,16 @@
 
 namespace GlpiPlugin\Grafana;
 
-require_once GLPI_ROOT . '/plugins/grafana/vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 use CommonDBTM;
 use CommonGLPI;
 use GlpiPlugin\Grafana\DashboardRight;
 use GlpiPlugin\Grafana\APIClient;
+use GlpiPlugin\Grafana\Token;
 use Central;
 use Session;
 use Dropdown;
-use DateTimeImmutable;
 use Glpi\Application\View\TemplateRenderer;
-
-use Lcobucci\JWT\Configuration;
-
-use Lcobucci\JWT\Signer\Key\InMemory;
-use Lcobucci\JWT\Signer\Rsa\Sha256;
 
 class Dashboard extends CommonDBTM
 {
@@ -162,10 +157,9 @@ class Dashboard extends CommonDBTM
             ],
         );
 
-        $private_key_path = GLPI_PLUGIN_DOC_DIR . '/grafana/keys/private_key.pem';
-        $public_key_path  = GLPI_PLUGIN_DOC_DIR . '/grafana/keys/public_key.pem';
+        $config = Config::getConfig();
 
-        if (!file_exists($private_key_path) || !file_exists($public_key_path)) {
+        if (empty($config['private_key']) || empty($config['public_key'])) {
             TemplateRenderer::getInstance()->display('@grafana/dashboard.html.twig', [
                 'dropdown'     => $dropdown,
                 'keys_missing' => true,
@@ -173,29 +167,23 @@ class Dashboard extends CommonDBTM
             return;
         }
 
-        $config      = Config::getConfig();
-        $private_key = file_get_contents($private_key_path);
-        $public_key  = file_get_contents($public_key_path);
-
-        $signer_config = Configuration::forAsymmetricSigner(
-            new Sha256(),
-            InMemory::plainText($private_key),
-            InMemory::plainText($public_key),
-        );
-
-        $now   = new DateTimeImmutable();
-        $token = $signer_config->builder()
-            ->issuedBy('glpi_plugin')
-            ->expiresAt($now->modify('+1 hour'))
-            ->relatedTo($config['username'])
-            ->withHeader('kid', 'grafana-key-1')
-            ->getToken($signer_config->signer(), $signer_config->signingKey());
+        $token_string = Token::mint($config);
 
         $currentDashboard = current(array_filter($dashboards, function ($dashboard) use ($currentUuid) {
             return $dashboard['id'] == $currentUuid;
         }));
         $dashboardUrl = $currentDashboard['url'];
         $url          = rtrim($config['url'], '/');
+
+        $scheme = parse_url($url, PHP_URL_SCHEME);
+        if (!in_array($scheme, ['http', 'https'], true)) {
+            TemplateRenderer::getInstance()->display('@grafana/dashboard.html.twig', [
+                'dropdown'  => $dropdown,
+                'api_error' => ['exception' => __('Invalid Grafana URL configured: must use http or https.', 'grafana')],
+            ]);
+            return;
+        }
+
         if (strpos($dashboardUrl, '/d/') !== 0) {
             $dashboardUrl = substr($dashboardUrl, strpos($dashboardUrl, '/d/'));
         }
@@ -205,9 +193,9 @@ class Dashboard extends CommonDBTM
         TemplateRenderer::getInstance()->display('@grafana/dashboard.html.twig', [
             'dropdown'        => $dropdown,
             'keys_missing'    => false,
-            'iframe_src'      => $baseIframeUrl . '&auth_token=' . $token->toString(),
+            'iframe_src'      => $baseIframeUrl . '&auth_token=' . $token_string,
             'base_iframe_url' => $baseIframeUrl,
-            'initial_token'   => $token->toString(),
+            'initial_token'   => $token_string,
             'refresh_url'     => $CFG_GLPI['url_base'] . '/plugins/grafana/ajax/refresh_token.php',
         ]);
     }

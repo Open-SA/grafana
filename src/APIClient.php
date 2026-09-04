@@ -208,7 +208,7 @@ class APIClient extends CommonGLPI
                 );
             }
 
-            if ($_SESSION['glpi_use_mode'] == Session::DEBUG_MODE) {
+            if (($_SESSION['glpi_use_mode'] ?? null) == Session::DEBUG_MODE) {
                 Toolbox::backtrace();
                 Toolbox::logDebug($this->last_error);
             }

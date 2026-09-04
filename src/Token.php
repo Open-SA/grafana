@@ -28,27 +28,37 @@
  * -------------------------------------------------------------------------
  */
 
-$dir = dirname(__DIR__, 3) . '/files/_plugins/grafana/keys/';
-$public_key_path = $dir . 'public_key.pem';
+namespace GlpiPlugin\Grafana;
 
-if (!file_exists($public_key_path)) {
-    header('HTTP/1.1 500 Internal Server Error', true, 500);
-    echo json_encode(['error' => 'RSA public key not found. Please reinstall the plugin.']);
-    return;
+use DateTimeImmutable;
+use GLPIKey;
+use Lcobucci\JWT\Configuration;
+use Lcobucci\JWT\Signer\Key\InMemory;
+use Lcobucci\JWT\Signer\Rsa\Sha256;
+
+class Token
+{
+    public static function mint(array $config): string
+    {
+        $private_key = (new GLPIKey())->decrypt($config['private_key']);
+        $public_key  = $config['public_key'];
+
+        $signer_config = Configuration::forAsymmetricSigner(
+            new Sha256(),
+            InMemory::plainText($private_key),
+            InMemory::plainText($public_key),
+        );
+
+        $now   = new DateTimeImmutable();
+        $token = $signer_config->builder()
+            ->issuedBy('glpi_plugin')
+            ->permittedFor(rtrim($config['url'], '/'))
+            ->identifiedBy(bin2hex(random_bytes(16)))
+            ->expiresAt($now->modify('+' . max(3, (int) $config['token_lifetime']) . ' minutes'))
+            ->relatedTo($config['username'])
+            ->withHeader('kid', 'grafana-key-1')
+            ->getToken($signer_config->signer(), $signer_config->signingKey());
+
+        return $token->toString();
+    }
 }
-
-$details = openssl_pkey_get_details(openssl_pkey_get_public(file_get_contents($public_key_path)));
-
-$n = rtrim(strtr(base64_encode($details['rsa']['n']), '+/', '-_'), '=');
-$e = rtrim(strtr(base64_encode($details['rsa']['e']), '+/', '-_'), '=');
-
-echo json_encode([
-  'keys' => [[
-    'kty' => 'RSA',
-    'kid' => 'grafana-key-1',
-    'use' => 'sig',
-    'alg' => 'RS256',
-    'n'   => $n,
-    'e'   => $e
-  ]]
-]);
