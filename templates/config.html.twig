@@ -35,7 +35,7 @@
         </div>
         <div id="grafana-security-notice-body" class="mt-1">
             <p class="mb-0">
-                {{ __('The per-dashboard permission grants configured in this plugin control which dashboards are displayed inside GLPI. They are a display filter only: the actual security boundary in Grafana is the permission set of the Grafana service account configured below. Any GLPI user who can view at least one dashboard will authenticate to Grafana as that shared service account and could reach any dashboard, folder, or data source that account has access to. Ensure the configured Grafana service account has access only to the dashboards intended for GLPI users.', 'grafana') }}
+                {{ __('The per-dashboard permission grants configured in this plugin control which dashboards are displayed inside GLPI. They are a display filter only: the actual security boundary in Grafana is the permission set of the dedicated Grafana user configured below. Any GLPI user who can view at least one dashboard will authenticate to Grafana as that shared user and could reach any dashboard, folder, or data source that user has access to. Ensure the configured Grafana user has access only to the dashboards intended for GLPI users.', 'grafana') }}
             </p>
         </div>
     </div>
@@ -91,7 +91,7 @@
             {# --- Username --- #}
             <div class="grafana_field">
                 <label class="grafana_label" for="grafanaconfig_username">
-                    {{ __('Service account username', 'grafana') }}
+                    {{ __('Dedicated Grafana user', 'grafana') }}
                 </label>
                 <input type="text" name="username"
                        value="{{ current_config.username }}"
@@ -103,7 +103,7 @@
             {# --- Password (never pre-filled) --- #}
             <div class="grafana_field">
                 <label class="grafana_label" for="grafanaconfig_password">
-                    {{ __('Service account password', 'grafana') }}
+                    {{ __('Dedicated Grafana user password', 'grafana') }}
                 </label>
                 <input type="password" name="fakefield" style="display:none;">
                 <div class="input-group grafana_control">
