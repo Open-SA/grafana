@@ -65,7 +65,8 @@ if (isset($_REQUEST["empty_button"])) {
         }
     }
     if (!empty($_POST['password'])) {
-        $input['password'] = $_POST['password'];
+        // Secured fields are stripped of automatic sanitization and arrive unsanitized in $_UPOST on GLPI 10.
+        $input['password'] = $_UPOST['password'];
     }
 
     if (!empty($input['url']) && !Toolbox::isValidWebUrl($input['url'])) {
