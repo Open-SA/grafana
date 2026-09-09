@@ -135,7 +135,7 @@ function plugin_grafana_install()
         }
 
         GlpiConfig::setConfigurationValues('plugin:grafana', [
-            'private_key' => (new GLPIKey())->encrypt($private_key),
+            'private_key' => $private_key,
             'public_key'  => $public_key,
         ]);
 
