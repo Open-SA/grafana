@@ -34,6 +34,7 @@ header('Content-Type: application/json');
 header('Cache-Control: no-store');
 
 use Config as GlpiConfig;
+use GlpiPlugin\Grafana\Token;
 
 $config = GlpiConfig::getConfigurationValues('plugin:grafana');
 
@@ -43,18 +44,6 @@ if (empty($config['public_key'])) {
     return;
 }
 
-$details = openssl_pkey_get_details(openssl_pkey_get_public($config['public_key']));
-
-$n = rtrim(strtr(base64_encode($details['rsa']['n']), '+/', '-_'), '=');
-$e = rtrim(strtr(base64_encode($details['rsa']['e']), '+/', '-_'), '=');
-
 echo json_encode([
-    'keys' => [[
-        'kty' => 'RSA',
-        'kid' => 'grafana-key-1',
-        'use' => 'sig',
-        'alg' => 'RS256',
-        'n'   => $n,
-        'e'   => $e,
-    ]],
+    'keys' => [Token::publicJwk($config['public_key'])],
 ]);
