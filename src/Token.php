@@ -38,6 +38,35 @@ use Lcobucci\JWT\Signer\Rsa\Sha256;
 
 class Token
 {
+    /**
+     * Derive a stable key ID from the public key material, so it changes
+     * automatically whenever the RSA key pair is rotated instead of staying
+     * fixed forever (which would make JWKS-consuming caches unable to tell
+     * an old key apart from a newly generated one).
+     */
+    public static function keyId(string $publicKeyPem): string
+    {
+        return substr(hash('sha256', $publicKeyPem), 0, 16);
+    }
+
+    /**
+     * Build the JWK (JSON Web Key) representation of the plugin's public key,
+     * for exposure through the JWKS endpoint.
+     */
+    public static function publicJwk(string $publicKeyPem): array
+    {
+        $details = openssl_pkey_get_details(openssl_pkey_get_public($publicKeyPem));
+
+        return [
+            'kty' => 'RSA',
+            'kid' => self::keyId($publicKeyPem),
+            'use' => 'sig',
+            'alg' => 'RS256',
+            'n'   => rtrim(strtr(base64_encode($details['rsa']['n']), '+/', '-_'), '='),
+            'e'   => rtrim(strtr(base64_encode($details['rsa']['e']), '+/', '-_'), '='),
+        ];
+    }
+
     public static function mint(array $config): string
     {
         $private_key = (new GLPIKey())->decrypt($config['private_key']);
@@ -56,7 +85,7 @@ class Token
             ->identifiedBy(bin2hex(random_bytes(16)))
             ->expiresAt($now->modify('+' . max(3, (int) $config['token_lifetime']) . ' minutes'))
             ->relatedTo($config['username'])
-            ->withHeader('kid', 'grafana-key-1')
+            ->withHeader('kid', self::keyId($public_key))
             ->getToken($signer_config->signer(), $signer_config->signingKey());
 
         return $token->toString();
