@@ -245,6 +245,8 @@ Para usarlas en Grafana, crear variables de dashboard con los mismos nombres (si
 
 ### Configuración de permisos
 
+Una vez configurado todo, hacer clic en el botón **Permisos** de la página de configuración del plugin para abrir la página de gestión de permisos.
+
 Desde ahí se puede asignar acceso a paneles individualmente a usuarios, grupos, perfiles o entidades. Cada entrada permite seleccionar qué paneles específicos son visibles.
 
 ![Página de permisos](./docs/screenshots/permissionsPage.png "Página de gestión de permisos")
