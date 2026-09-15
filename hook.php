@@ -92,6 +92,22 @@ function plugin_grafana_install()
         $DB->doQuery($query);
     }
 
+    // Default dashboard actors table — one preferred dashboard per actor
+    $defaultDashboardTable = 'glpi_plugin_grafana_defaultdashboards';
+    if (!$DB->tableExists($defaultDashboardTable)) {
+        $migration->displayMessage("Installing $defaultDashboardTable");
+
+        $query = "CREATE TABLE IF NOT EXISTS `$defaultDashboardTable` (
+                     `id` int {$default_key_sign} NOT NULL AUTO_INCREMENT,
+                     `actor_type` varchar(20) NOT NULL,
+                     `actor_id` int {$default_key_sign} NOT NULL,
+                     `dashboard_uuid` varchar(200) NOT NULL,
+                     PRIMARY KEY (`id`),
+                     UNIQUE KEY `actor_type_actor_id` (`actor_type`, `actor_id`)
+                  ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=DYNAMIC;";
+        $DB->doQuery($query);
+    }
+
     $migration->executeMigration();
 
     // Only insert missing keys — setConfigurationValues does an upsert, so we
@@ -169,6 +185,7 @@ function plugin_grafana_uninstall()
 
     $DB->doQuery('DROP TABLE IF EXISTS `' . DashboardRight::getTable() . '`');
     $DB->doQuery('DROP TABLE IF EXISTS `glpi_plugin_grafana_defaulttabs`');
+    $DB->doQuery('DROP TABLE IF EXISTS `glpi_plugin_grafana_defaultdashboards`');
     $DB->doQuery('DROP TABLE IF EXISTS `glpi_plugin_grafana_profilerights`');
 
     // Clean up legacy key files if they were not migrated to the database

@@ -316,6 +316,161 @@ class DashboardRight extends CommonDBTM
         return $DB->delete(self::getDefaultTabTable(), ['id' => $id]);
     }
 
+    // ── Default dashboard actors ─────────────────────────────────────────
+
+    public static function getDefaultDashboardTable(): string
+    {
+        return 'glpi_plugin_grafana_defaultdashboards';
+    }
+
+    /**
+     * Resolve the preferred default dashboard for a user, checking actor
+     * types in priority order (User > Group > Profile > Entity) and
+     * returning the first match. Unlike isDefaultTabForUser() (a boolean,
+     * with no conflict to resolve), this must settle on a single value.
+     */
+    public static function getDefaultDashboardFor(int $userId): ?string
+    {
+        /** @var \DBmysql $DB */
+        global $DB;
+
+        if (!$DB->tableExists(self::getDefaultDashboardTable())) {
+            return null;
+        }
+
+        $groups    = (array) ($_SESSION['glpigroups'] ?? []);
+        $profileId = (int) ($_SESSION['glpiactiveprofile']['id'] ?? 0);
+        $entityId  = (int) ($_SESSION['glpiactive_entity'] ?? 0);
+
+        $priority = [
+            ['actor_type' => 'User', 'actor_id' => $userId],
+        ];
+        if (!empty($groups)) {
+            $priority[] = ['actor_type' => 'Group', 'actor_id' => $groups];
+        }
+        $priority[] = ['actor_type' => 'Profile', 'actor_id' => $profileId];
+        $priority[] = ['actor_type' => 'Entity', 'actor_id' => $entityId];
+
+        foreach ($priority as $condition) {
+            $iterator = $DB->request([
+                'FROM'  => self::getDefaultDashboardTable(),
+                'WHERE' => $condition,
+                'LIMIT' => 1,
+            ]);
+
+            foreach ($iterator as $row) {
+                return $row['dashboard_uuid'];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * All default-dashboard actor grants with resolved actor names.
+     *
+     * @return array<int, array{id: int, actor_type: string, actor_id: int, actor_name: string, dashboard_uuid: string}>
+     */
+    public static function getDefaultDashboardActors(): array
+    {
+        /** @var \DBmysql $DB */
+        global $DB;
+
+        if (!$DB->tableExists(self::getDefaultDashboardTable())) {
+            return [];
+        }
+
+        $iterator = $DB->request([
+            'FROM'  => self::getDefaultDashboardTable(),
+            'ORDER' => 'actor_type ASC',
+        ]);
+
+        $byType = ['Profile' => [], 'User' => [], 'Group' => [], 'Entity' => []];
+        $rows   = [];
+
+        foreach ($iterator as $row) {
+            $rows[]                                       = $row;
+            $byType[$row['actor_type']][$row['actor_id']] = true;
+        }
+
+        $tableMap = [
+            'Profile' => 'glpi_profiles',
+            'User'    => 'glpi_users',
+            'Group'   => 'glpi_groups',
+            'Entity'  => 'glpi_entities',
+        ];
+
+        $names = [];
+        foreach ($tableMap as $type => $table) {
+            $ids = array_keys($byType[$type]);
+            if (empty($ids)) {
+                continue;
+            }
+            $nameIter = $DB->request([
+                'SELECT' => ['id', 'name'],
+                'FROM'   => $table,
+                'WHERE'  => ['id' => $ids],
+            ]);
+            foreach ($nameIter as $nameRow) {
+                $names[$type][$nameRow['id']] = $nameRow['name'];
+            }
+        }
+
+        $actors = [];
+        foreach ($rows as $row) {
+            $actors[] = [
+                'id'             => (int) $row['id'],
+                'actor_type'     => $row['actor_type'],
+                'actor_id'       => (int) $row['actor_id'],
+                'actor_name'     => $names[$row['actor_type']][$row['actor_id']] ?? '?',
+                'dashboard_uuid' => $row['dashboard_uuid'],
+            ];
+        }
+
+        return $actors;
+    }
+
+    /**
+     * Set (or replace) the default dashboard for an actor. Upserts so an
+     * actor only ever has one default dashboard at a time.
+     */
+    public static function addDefaultDashboardActor(string $actorType, int $actorId, string $dashboardUuid): bool
+    {
+        /** @var \DBmysql $DB */
+        global $DB;
+
+        $existing = $DB->request([
+            'FROM'  => self::getDefaultDashboardTable(),
+            'WHERE' => ['actor_type' => $actorType, 'actor_id' => $actorId],
+            'LIMIT' => 1,
+        ]);
+
+        foreach ($existing as $row) {
+            return (bool) $DB->update(
+                self::getDefaultDashboardTable(),
+                ['dashboard_uuid' => $dashboardUuid],
+                ['id' => $row['id']]
+            );
+        }
+
+        return (bool) $DB->insert(self::getDefaultDashboardTable(), [
+            'actor_type'     => $actorType,
+            'actor_id'       => $actorId,
+            'dashboard_uuid' => $dashboardUuid,
+        ]);
+    }
+
+    /**
+     * Remove a default-dashboard grant by its row ID.
+     */
+    public static function removeDefaultDashboardActor(int $id): bool
+    {
+        /** @var \DBmysql $DB */
+        global $DB;
+
+        return $DB->delete(self::getDefaultDashboardTable(), ['id' => $id]);
+    }
+
     // ── Internal helpers ─────────────────────────────────────────────────
 
     /**
