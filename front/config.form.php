@@ -38,6 +38,7 @@ use GlpiPlugin\Grafana\Config as GrafanaConfig;
 use Session;
 use Config;
 use GlpiPlugin\Grafana\APIClient;
+use GlpiPlugin\Grafana\Token;
 
 include('../../../inc/includes.php');
 Session::checkRight("config", UPDATE);
@@ -53,6 +54,28 @@ if (isset($_REQUEST["empty_button"])) {
         $input['url_param_' . $key] = ($_POST['url_param_' . $key] ?? '0') === '1' ? 1 : 0;
     }
     Config::setConfigurationValues('plugin:grafana', $input);
+    Html::back();
+} elseif (!empty($_POST["rotate_keys"])) {
+    $key_pair = Token::generateKeyPair();
+    if ($key_pair === false) {
+        Session::addMessageAfterRedirect(
+            __('Could not generate a new RSA key pair.', 'grafana'),
+            false,
+            ERROR
+        );
+        Html::back();
+    }
+
+    Config::setConfigurationValues('plugin:grafana', [
+        'private_key' => $key_pair['private_key'],
+        'public_key'  => $key_pair['public_key'],
+    ]);
+
+    Session::addMessageAfterRedirect(
+        __('Grafana signing keys rotated successfully.', 'grafana'),
+        false,
+        INFO
+    );
     Html::back();
 } elseif (!empty($_POST["update"])) {
     $input = [
