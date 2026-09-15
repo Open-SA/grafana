@@ -67,6 +67,31 @@ class Token
         ];
     }
 
+    /**
+     * Generate a fresh 2048-bit RSA key pair for signing JWTs.
+     *
+     * @return array{private_key: string, public_key: string}|false
+     */
+    public static function generateKeyPair()
+    {
+        $key_pair = openssl_pkey_new([
+            'private_key_bits' => 2048,
+            'private_key_type' => OPENSSL_KEYTYPE_RSA,
+        ]);
+
+        if ($key_pair === false) {
+            return false;
+        }
+
+        openssl_pkey_export($key_pair, $private_key);
+        $public_key = openssl_pkey_get_details($key_pair)['key'];
+
+        return [
+            'private_key' => $private_key,
+            'public_key'  => $public_key,
+        ];
+    }
+
     public static function mint(array $config): string
     {
         $private_key = (new GLPIKey())->decrypt($config['private_key']);
