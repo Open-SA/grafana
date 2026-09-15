@@ -112,7 +112,7 @@ package_job:
       echo "Moviendo archivos al directorio de destino..."
       for item in $(ls -A); do
         case "$item" in
-          "${DEST_FOLDER}"| ".git"| ".git-hooks"| ".gitlab-ci.yml"| ".github"| "tests"| ".gitignore"| ".php-cs-fixer.php"| "phpstan.neon"| "phpunit.xml")
+          "${DEST_FOLDER}"| ".git"| ".git-hooks"| ".gitlab-ci.yml"| ".github"| "tests"| ".gitignore"| ".php-cs-fixer.php"| "phpstan.neon"| "phpunit.xml"| "sonar-project.properties"| "psalm.xml"| "stubs")
             echo "Ignorando ${item}..."
             continue
             ;;
