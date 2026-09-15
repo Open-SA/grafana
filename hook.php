@@ -30,6 +30,7 @@
 
 use Config as GlpiConfig;
 use GlpiPlugin\Grafana\DashboardRight;
+use GlpiPlugin\Grafana\Token;
 
 /**
  * Plugin install process
@@ -122,16 +123,13 @@ function plugin_grafana_install()
             $public_key  = file_get_contents($public_key_path);
         } else {
             $migration->displayMessage('Grafana plugin: generating RSA key pair');
-            $key_pair = openssl_pkey_new([
-                'private_key_bits' => 2048,
-                'private_key_type' => OPENSSL_KEYTYPE_RSA,
-            ]);
+            $key_pair = Token::generateKeyPair();
             if ($key_pair === false) {
                 $migration->displayWarning('Grafana plugin: could not generate RSA key pair. ' . openssl_error_string());
                 return false;
             }
-            openssl_pkey_export($key_pair, $private_key);
-            $public_key = openssl_pkey_get_details($key_pair)['key'];
+            $private_key = $key_pair['private_key'];
+            $public_key  = $key_pair['public_key'];
         }
 
         GlpiConfig::setConfigurationValues('plugin:grafana', [
