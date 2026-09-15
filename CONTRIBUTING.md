@@ -19,26 +19,17 @@ composer run setup-dev
 | `dev` | Integration branch — features and fixes merge here before `main` |
 | `support/glpi10` | Maintenance branch for GLPI 10 |
 
-We follow a [git flow](https://nvie.com/posts/a-successful-git-branching-model/) style workflow: new features and bugfixes live in short-lived branches off `dev` and are merged back via pull request. Using git flow is recommended but not required.
+We follow a [git flow](https://nvie.com/posts/a-successful-git-branching-model/) style workflow: new features and bugfixes live in short-lived branches off `dev` and are merged back via pull request. Using git flow is recommended but not required. If you're opening a pull request from a fork, base it on `dev` (or `support/glpi10` for GLPI 10-specific fixes).
 
 ## Coding standards
 
-PHP CS Fixer and PHPStan run automatically on every commit via the pre-commit hook. To run them manually:
+PHP CS Fixer and PHPStan run automatically on every commit via the pre-commit hook. Every push and pull request also runs PHPCS, PHPStan and Psalm (taint analysis) in CI. To run them manually:
 
 ```bash
 vendor/bin/phpcs
 vendor/bin/phpstan analyse
+vendor/bin/psalm --taint-analysis
 ```
-
-## Creating a release
-
-1. Merge all changes to `main` (or `support/glpi10` for a GLPI 10 release)
-2. Create and push a tag — GitHub Actions builds the zip automatically:
-   ```bash
-   git tag 1.x.y
-   git push origin 1.x.y
-   ```
-3. Update `grafana.xml` on `main` with the new version entry and push
 
 ## For distributors
 
@@ -71,26 +62,17 @@ composer run setup-dev
 | `dev` | Rama de integración — features y fixes se mergean aquí antes de `main` |
 | `support/glpi10` | Rama de mantenimiento para GLPI 10 |
 
-Seguimos un flujo de trabajo estilo [git flow](https://nvie.com/posts/a-successful-git-branching-model/): las nuevas funcionalidades y correcciones viven en ramas de corta duración desde `dev` y se mergean de vuelta mediante pull request. Usar git flow es recomendable pero no obligatorio.
+Seguimos un flujo de trabajo estilo [git flow](https://nvie.com/posts/a-successful-git-branching-model/): las nuevas funcionalidades y correcciones viven en ramas de corta duración desde `dev` y se mergean de vuelta mediante pull request. Usar git flow es recomendable pero no obligatorio. Si abrís un pull request desde un fork, basalo en `dev` (o `support/glpi10` para fixes específicos de GLPI 10).
 
 ## Estándares de código
 
-PHP CS Fixer y PHPStan corren automáticamente en cada commit a través del hook de pre-commit. Para correrlos manualmente:
+PHP CS Fixer y PHPStan corren automáticamente en cada commit a través del hook de pre-commit. Cada push y pull request también corre PHPCS, PHPStan y Psalm (taint analysis) en CI. Para correrlos manualmente:
 
 ```bash
 vendor/bin/phpcs
 vendor/bin/phpstan analyse
+vendor/bin/psalm --taint-analysis
 ```
-
-## Crear un release
-
-1. Mergear todos los cambios a `main` (o `support/glpi10` para un release de GLPI 10)
-2. Crear y pushear un tag — GitHub Actions genera el zip automáticamente:
-   ```bash
-   git tag 1.x.y
-   git push origin 1.x.y
-   ```
-3. Actualizar `grafana.xml` en `main` con la nueva entrada de versión y pushear
 
 ## Para distribuidores
 
