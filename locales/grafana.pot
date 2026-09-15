@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-04 12:32-0300\n"
+"POT-Creation-Date: 2026-09-15 15:51-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,24 +17,32 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: front/config.form.php:73 src/Config.php:179
+#: front/config.form.php:62
+msgid "Could not generate a new RSA key pair."
+msgstr ""
+
+#: front/config.form.php:75
+msgid "Grafana signing keys rotated successfully."
+msgstr ""
+
+#: front/config.form.php:96 src/Config.php:171
 msgid "Invalid Grafana URL: must be a valid http or https URL."
 msgstr ""
 
-#: front/config.form.php:93
+#: front/config.form.php:116
 msgid "Unknown error"
 msgstr ""
 
-#: front/config.form.php:95
+#: front/config.form.php:118
 #, php-format
 msgid "Configuration saved, but Grafana theme sync failed: %s"
 msgstr ""
 
-#: front/config.form.php:101
+#: front/config.form.php:124
 msgid "Configuration saved successfully"
 msgstr ""
 
-#: front/config.form.php:105
+#: front/config.form.php:128
 msgid "Theres been some kind of error"
 msgstr ""
 
@@ -60,47 +68,47 @@ msgid ""
 "increase the timeout value in plugin configuration"
 msgstr ""
 
-#: src/Config.php:198
+#: src/Config.php:190
 msgid "User ID"
 msgstr ""
 
-#: src/Config.php:199
+#: src/Config.php:191
 msgid "Username (login)"
 msgstr ""
 
-#: src/Config.php:200
+#: src/Config.php:192
 msgid "First name"
 msgstr ""
 
-#: src/Config.php:201
+#: src/Config.php:193
 msgid "Last name"
 msgstr ""
 
-#: src/Config.php:202
+#: src/Config.php:194
 msgid "Active entity ID"
 msgstr ""
 
-#: src/Config.php:203
+#: src/Config.php:195
 msgid "Active entity name"
 msgstr ""
 
-#: src/Config.php:204
+#: src/Config.php:196
 msgid "All active entity IDs (comma-separated)"
 msgstr ""
 
-#: src/Config.php:205
+#: src/Config.php:197
 msgid "Active profile ID"
 msgstr ""
 
-#: src/Config.php:206
+#: src/Config.php:198
 msgid "Active profile name"
 msgstr ""
 
-#: src/Config.php:207
+#: src/Config.php:199
 msgid "Groups (comma-separated IDs)"
 msgstr ""
 
-#: src/Config.php:208
+#: src/Config.php:200
 msgid "Language"
 msgstr ""
 
@@ -190,35 +198,43 @@ msgid ""
 "leaked, but increase refresh frequency."
 msgstr ""
 
-#: templates/config.html.twig:172 templates/config.html.twig:211
+#: templates/config.html.twig:172 templates/config.html.twig:222
 msgctxt "button"
 msgid "Save"
 msgstr ""
 
-#: templates/config.html.twig:179
+#: templates/config.html.twig:185
+msgid "Rotate signing keys now"
+msgstr ""
+
+#: templates/config.html.twig:180
+msgid "Rotating invalidates all unused tokens immediately. Continue?"
+msgstr ""
+
+#: templates/config.html.twig:190
 msgid "GLPI context variables for Grafana"
 msgstr ""
 
-#: templates/config.html.twig:188
+#: templates/config.html.twig:199
 msgid ""
 "Selected fields are appended to the Grafana iframe URL as dashboard "
 "variables (var-&lt;key&gt;=&lt;value&gt;). Configure matching variables in "
 "each Grafana dashboard."
 msgstr ""
 
-#: templates/config.html.twig:218
+#: templates/config.html.twig:229
 msgid "API status"
 msgstr ""
 
-#: templates/config.html.twig:229
+#: templates/config.html.twig:240
 msgid "Last Error"
 msgstr ""
 
-#: templates/config.html.twig:242
+#: templates/config.html.twig:253
 msgid "Action(s)"
 msgstr ""
 
-#: templates/config.html.twig:246
+#: templates/config.html.twig:257
 msgid "Show reports and dashboards specifications"
 msgstr ""
 

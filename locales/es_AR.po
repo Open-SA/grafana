@@ -44,6 +44,22 @@ msgstr "Configuración guardada correctamente"
 msgid "Theres been some kind of error"
 msgstr "Ocurrió un error"
 
+#: front/config.form.php
+msgid "Could not generate a new RSA key pair."
+msgstr "No se pudo generar un nuevo par de claves RSA."
+
+#: front/config.form.php
+msgid "Grafana signing keys rotated successfully."
+msgstr "Las claves de firma de Grafana se rotaron correctamente."
+
+#: templates/config.html.twig
+msgid "Rotate signing keys now"
+msgstr "Rotar las claves de firma ahora"
+
+#: templates/config.html.twig
+msgid "Rotating invalidates all unused tokens immediately. Continue?"
+msgstr "Rotar invalida inmediatamente todos los tokens no utilizados. ¿Continuar?"
+
 #: front/dashboards.php:38
 msgid "Grafana collections"
 msgstr "Colecciones de Grafana"
