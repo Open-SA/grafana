@@ -156,14 +156,6 @@ class Config extends CommonDBTM
      */
     public static function configUpdate($input)
     {
-        // if (isset($input['token'])) {
-        //     if (empty($input['token'])) {
-        //         unset($input['token']);
-        //     } else {
-        //         // Remove existing session token to force reconnection
-        //         //unset($_SESSION['grafana']['token']);
-        //     }
-        // }
         if (isset($input['password'])) {
             if (empty($input['password'])) {
                 unset($input['password']);
