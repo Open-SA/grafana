@@ -10,6 +10,8 @@
  #   api_error           array|null   Error from APIClient::getLastError() or null
  #   actor_types         array        key => translated label (Profile/User/Group/Entity)
  #   default_tab_actors  array        Each entry: {id, actor_type, actor_id, actor_name}
+ #   default_dashboard_actors
+ #                       array        Each entry: {id, actor_type, actor_id, actor_name, dashboard_uuid, dashboard_title}
  #   form_url            string       POST target (front/rights.php)
  #   ajax_url            string       AJAX endpoint (ajax/rights.php)
  #   config_url          string       URL back to the plugin config tab
@@ -123,6 +125,102 @@
                 </div>
 
                 <button type="submit" name="add_default_tab" value="1"
+                        class="btn btn-sm btn-primary">
+                    <i class="ti ti-plus"></i>
+                    {{ __('Add', 'grafana') }}
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    {# ── Default dashboard ──────────────────────────────────────────────── #}
+    <div class="card mb-4">
+        <div class="card-header d-flex align-items-center gap-2">
+            <i class="ti ti-layout-dashboard"></i>
+            <strong>{{ __('Default dashboard', 'grafana') }}</strong>
+        </div>
+        <div class="card-body">
+
+            <p class="text-muted mb-3" style="font-size:.9em;">
+                {{ __('Users that match an actor below will see the selected dashboard preselected when they open the Grafana tab, instead of the first one in the list.', 'grafana') }}
+            </p>
+
+            {# ── current default-dashboard actors ────────────────────── #}
+            {% if default_dashboard_actors is not empty %}
+                <table class="table table-sm table-hover mb-3">
+                    <thead>
+                        <tr>
+                            <th>{{ __('Type', 'grafana') }}</th>
+                            <th>{{ __('Name', 'grafana') }}</th>
+                            <th>{{ __('Dashboard', 'grafana') }}</th>
+                            <th style="width:1%"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for actor in default_dashboard_actors %}
+                            <tr>
+                                <td>{{ actor_types[actor.actor_type] ?? actor.actor_type }}</td>
+                                <td>{{ actor.actor_name }}</td>
+                                <td>{{ actor.dashboard_title }}</td>
+                                <td>
+                                    <form method="post" action="{{ form_url }}" class="d-inline">
+                                        <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+                                        <input type="hidden" name="default_dashboard_id" value="{{ actor.id }}">
+                                        <button type="submit" name="delete_default_dashboard" value="1"
+                                                class="btn btn-sm btn-outline-danger"
+                                                title="{{ __('Remove', 'grafana') }}">
+                                            <i class="ti ti-trash"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="text-muted mb-3" style="font-size:.9em;">
+                    <i class="ti ti-eye-off me-1"></i>
+                    {{ __('No actors configured — no default dashboard is set for any user.', 'grafana') }}
+                </p>
+            {% endif %}
+
+            {# ── add default-dashboard actor form ────────────────────── #}
+            <form method="post" action="{{ form_url }}"
+                  class="d-flex gap-2 align-items-end flex-wrap grafana-add-grant">
+                <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+
+                <div>
+                    <label class="form-label form-label-sm mb-1">{{ __('Type', 'grafana') }}</label>
+                    <select name="actor_type"
+                            class="form-select form-select-sm grafana-actor-type"
+                            data-ajax-url="{{ ajax_url }}"
+                            data-target="grafana-actor-default-dashboard"
+                            required>
+                        <option value="">— {{ __('Select...', 'grafana') }} —</option>
+                        {% for type, label in actor_types %}
+                            <option value="{{ type }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div id="grafana-actor-default-dashboard" style="min-width:220px;">
+                    {# populated via AJAX on type change #}
+                </div>
+
+                <div>
+                    <label class="form-label form-label-sm mb-1">{{ __('Dashboard', 'grafana') }}</label>
+                    <select name="dashboard_uuid" class="form-select form-select-sm" style="min-width:220px;" required>
+                        <option value="">— {{ __('Select...', 'grafana') }} —</option>
+                        {% for dashboard in dashboards %}
+                            <option value="{{ dashboard.uuid }}">
+                                {% if dashboard.folder_title %}{{ dashboard.folder_title }} / {% endif %}{{ dashboard.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <button type="submit" name="add_default_dashboard" value="1"
                         class="btn btn-sm btn-primary">
                     <i class="ti ti-plus"></i>
                     {{ __('Add', 'grafana') }}

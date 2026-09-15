@@ -321,6 +321,28 @@ msgstr ""
 "Los usuarios que coincidan con alguno de los actores a continuación verán "
 "la pestaña de Grafana como pestaña de inicio predeterminada al iniciar sesión."
 
+#: templates/rights.html.twig
+msgid "Default dashboard"
+msgstr "Tablero predeterminado"
+
+#: templates/rights.html.twig
+msgid ""
+"Users that match an actor below will see the selected dashboard "
+"preselected when they open the Grafana tab, instead of the first one in "
+"the list."
+msgstr ""
+"Los usuarios que coincidan con un actor a continuación verán el tablero "
+"seleccionado ya elegido al abrir la pestaña de Grafana, en vez del primero "
+"de la lista."
+
+#: templates/rights.html.twig
+msgid "Dashboard"
+msgstr "Tablero"
+
+#: templates/rights.html.twig
+msgid "No actors configured — no default dashboard is set for any user."
+msgstr "Sin actores configurados — no hay tablero predeterminado para ningún usuario."
+
 #: templates/rights.html.twig:70 templates/rights.html.twig:108
 #: templates/rights.html.twig:162 templates/rights.html.twig:201
 msgid "Type"
