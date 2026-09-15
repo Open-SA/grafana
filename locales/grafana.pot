@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-15 15:51-0300\n"
+"POT-Creation-Date: 2026-09-15 16:34-0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -50,7 +50,7 @@ msgstr ""
 msgid "Grafana collections"
 msgstr ""
 
-#: front/rights.php:82
+#: front/rights.php:105
 msgid "Grafana dashboard permissions"
 msgstr ""
 
@@ -116,7 +116,7 @@ msgstr ""
 msgid "Grafana dashboard"
 msgstr ""
 
-#: src/Dashboard.php:182
+#: src/Dashboard.php:191
 msgid "Invalid Grafana URL configured: must use http or https."
 msgstr ""
 
@@ -198,44 +198,40 @@ msgid ""
 "leaked, but increase refresh frequency."
 msgstr ""
 
-#: templates/config.html.twig:172 templates/config.html.twig:222
+#: templates/config.html.twig:172 templates/config.html.twig:211
 msgctxt "button"
 msgid "Save"
 msgstr ""
 
-#: templates/config.html.twig:185
-msgid "Rotate signing keys now"
-msgstr ""
-
-#: templates/config.html.twig:180
-msgid "Rotating invalidates all unused tokens immediately. Continue?"
-msgstr ""
-
-#: templates/config.html.twig:190
+#: templates/config.html.twig:179
 msgid "GLPI context variables for Grafana"
 msgstr ""
 
-#: templates/config.html.twig:199
+#: templates/config.html.twig:188
 msgid ""
 "Selected fields are appended to the Grafana iframe URL as dashboard "
 "variables (var-&lt;key&gt;=&lt;value&gt;). Configure matching variables in "
 "each Grafana dashboard."
 msgstr ""
 
-#: templates/config.html.twig:229
+#: templates/config.html.twig:218
 msgid "API status"
 msgstr ""
 
-#: templates/config.html.twig:240
+#: templates/config.html.twig:229
 msgid "Last Error"
 msgstr ""
 
-#: templates/config.html.twig:253
+#: templates/config.html.twig:242
 msgid "Action(s)"
 msgstr ""
 
-#: templates/config.html.twig:257
+#: templates/config.html.twig:246
 msgid "Show reports and dashboards specifications"
+msgstr ""
+
+#: templates/config.html.twig:255
+msgid "Rotate signing keys now"
 msgstr ""
 
 #: templates/dashboard.html.twig:27 templates/dashboard_json.html.twig:27
@@ -244,7 +240,7 @@ msgid "Grafana API error"
 msgstr ""
 
 #: templates/dashboard.html.twig:34 templates/dashboard_json.html.twig:34
-#: templates/dashboards.html.twig:32 templates/rights.html.twig:44
+#: templates/dashboards.html.twig:32 templates/rights.html.twig:46
 msgid "Response preview"
 msgstr ""
 
@@ -268,60 +264,82 @@ msgstr ""
 msgid "Unable to access dashboards data. Please check plugin configuration."
 msgstr ""
 
-#: templates/rights.html.twig:22
+#: templates/rights.html.twig:24
 msgid "Dashboard permissions"
 msgstr ""
 
-#: templates/rights.html.twig:25
+#: templates/rights.html.twig:27
 msgid "Back to configuration"
 msgstr ""
 
-#: templates/rights.html.twig:30
+#: templates/rights.html.twig:32
 msgid ""
 "A dashboard is visible only to users that match at least one grant below. A "
 "dashboard with no grants is hidden from everyone."
 msgstr ""
 
-#: templates/rights.html.twig:37
+#: templates/rights.html.twig:39
 msgid "Grafana API error — dashboard list could not be loaded"
 msgstr ""
 
-#: templates/rights.html.twig:57
+#: templates/rights.html.twig:59
 msgid "Default central tab"
 msgstr ""
 
-#: templates/rights.html.twig:62
+#: templates/rights.html.twig:64
 msgid ""
 "Users that match any actor below will see the Grafana tab as their default "
 "home page tab on login."
 msgstr ""
 
-#: templates/rights.html.twig:70 templates/rights.html.twig:108
-#: templates/rights.html.twig:162 templates/rights.html.twig:201
+#: templates/rights.html.twig:72 templates/rights.html.twig:110
+#: templates/rights.html.twig:154 templates/rights.html.twig:194
+#: templates/rights.html.twig:260 templates/rights.html.twig:299
 msgid "Type"
 msgstr ""
 
-#: templates/rights.html.twig:71 templates/rights.html.twig:163
+#: templates/rights.html.twig:73 templates/rights.html.twig:155
+#: templates/rights.html.twig:261
 msgid "Name"
 msgstr ""
 
-#: templates/rights.html.twig:98
+#: templates/rights.html.twig:100
 msgid ""
 "No actors configured — Grafana tab will not be set as default for any user."
 msgstr ""
 
-#: templates/rights.html.twig:114 templates/rights.html.twig:207
+#: templates/rights.html.twig:116 templates/rights.html.twig:200
+#: templates/rights.html.twig:214 templates/rights.html.twig:305
 msgid "Select..."
 msgstr ""
 
-#: templates/rights.html.twig:128 templates/rights.html.twig:221
+#: templates/rights.html.twig:130 templates/rights.html.twig:226
+#: templates/rights.html.twig:319
 msgid "Add"
 msgstr ""
 
-#: templates/rights.html.twig:139
+#: templates/rights.html.twig:141
+msgid "Default dashboard"
+msgstr ""
+
+#: templates/rights.html.twig:146
+msgid ""
+"Users that match an actor below will see the selected dashboard preselected "
+"when they open the Grafana tab, instead of the first one in the list."
+msgstr ""
+
+#: templates/rights.html.twig:156 templates/rights.html.twig:212
+msgid "Dashboard"
+msgstr ""
+
+#: templates/rights.html.twig:184
+msgid "No actors configured — no default dashboard is set for any user."
+msgstr ""
+
+#: templates/rights.html.twig:237
 msgid "No dashboards found. Check plugin configuration."
 msgstr ""
 
-#: templates/rights.html.twig:190
+#: templates/rights.html.twig:288
 msgid "No grants — this dashboard is hidden from all users."
 msgstr ""
