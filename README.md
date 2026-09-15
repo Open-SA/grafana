@@ -79,7 +79,7 @@ log_format grafana_safe '$remote_addr - $remote_user [$time_local] '
 
 For Apache, use a `CustomLog` directive with a format string that logs `%U` (URI path without query string) instead of `%r`.
 
-**About the `kid` (key ID):** The plugin derives the `kid` header automatically from a hash of its current public key, so it changes on its own whenever the key pair is regenerated (e.g. after a reinstall). Do not set `key_id` or `key_file` manually in your `grafana.ini` — the plugin relies on `jwk_set_url` to publish its key dynamically, and a static `key_id`/`key_file` would conflict with that and stop working the next time the key rotates.
+**About the `kid` (key ID):** The plugin derives the `kid` header automatically from a hash of its current public key, so it changes on its own whenever the key pair is regenerated (e.g. after a reinstall, or by rotating the keys from the config page — see [Key rotation](#key-rotation) below). Do not set `key_id` or `key_file` manually in your `grafana.ini` — the plugin relies on `jwk_set_url` to publish its key dynamically, and a static `key_id`/`key_file` would conflict with that and stop working the next time the key rotates.
 
 **JWKS troubleshooting:** If Grafana logs show `failed to verify JWT: EOF` or a similar JWKS-related error, check the following:
 - **The JWKS URL must be reachable directly from Grafana's server**, not just from your browser. Test it from the Grafana host itself:
@@ -124,6 +124,12 @@ From there you can assign dashboard access individually to users, groups, profil
 
 ![Permissions page](./docs/screenshots/permissionsPageEn.png "Permissions management page")
 ![Permissions entry](./docs/screenshots/permissionsEntryEn.png "Adding a permissions entry")
+
+### Key rotation
+
+The **Action(s)** section of the config page includes a **Rotate signing keys now** button. Clicking it generates a fresh RSA key pair and immediately invalidates every unused token — the `kid` served by the JWKS endpoint changes automatically along with it, so there's nothing else to configure on the Grafana side.
+
+Rotation does **not** necessarily end sessions already established in Grafana: if `enable_login_token` is enabled in your `grafana.ini`, users who already exchanged their JWT for a Grafana session cookie keep working normally until that session expires on its own — rotation only affects tokens that haven't been used yet.
 
 ### Security model
 
@@ -206,7 +212,7 @@ log_format grafana_safe '$remote_addr - $remote_user [$time_local] '
 
 Para Apache, usar una directiva `CustomLog` con un formato que registre `%U` (ruta sin query string) en lugar de `%r`.
 
-**Sobre el `kid` (key ID):** El plugin deriva el header `kid` automáticamente a partir de un hash de su clave pública actual, así que cambia solo cada vez que se regenera el par de claves (por ejemplo, después de un reinstall). No configures `key_id` ni `key_file` manualmente en tu `grafana.ini` — el plugin depende de `jwk_set_url` para publicar su clave de forma dinámica, y un `key_id`/`key_file` estático entraría en conflicto con eso y dejaría de funcionar la próxima vez que rote la clave.
+**Sobre el `kid` (key ID):** El plugin deriva el header `kid` automáticamente a partir de un hash de su clave pública actual, así que cambia solo cada vez que se regenera el par de claves (por ejemplo, después de un reinstall, o rotando las claves desde la página de configuración — ver [Rotación de claves](#rotación-de-claves) más abajo). No configures `key_id` ni `key_file` manualmente en tu `grafana.ini` — el plugin depende de `jwk_set_url` para publicar su clave de forma dinámica, y un `key_id`/`key_file` estático entraría en conflicto con eso y dejaría de funcionar la próxima vez que rote la clave.
 
 **Troubleshooting de JWKS:** Si los logs de Grafana muestran `failed to verify JWT: EOF` o un error similar relacionado al JWKS, revisá lo siguiente:
 - **La URL del JWKS tiene que ser alcanzable directamente desde el servidor de Grafana**, no solo desde tu navegador. Probala desde el propio host de Grafana:
@@ -251,6 +257,12 @@ Desde ahí se puede asignar acceso a paneles individualmente a usuarios, grupos,
 
 ![Página de permisos](./docs/screenshots/permissionsPage.png "Página de gestión de permisos")
 ![Entrada de permisos](./docs/screenshots/permissionsEntry.png "Agregar una entrada de permisos")
+
+### Rotación de claves
+
+La sección **Acción(es)** de la página de configuración incluye un botón **Rotar las claves de firma ahora**. Al hacer clic se genera un nuevo par de claves RSA y se invalida inmediatamente todo token no utilizado — el `kid` que sirve el endpoint JWKS cambia automáticamente junto con él, así que no hay nada más que configurar del lado de Grafana.
+
+La rotación **no** necesariamente termina las sesiones ya establecidas en Grafana: si `enable_login_token` está activo en tu `grafana.ini`, los usuarios que ya intercambiaron su JWT por una cookie de sesión de Grafana siguen funcionando normalmente hasta que esa sesión expire por su cuenta — la rotación solo afecta a los tokens que todavía no se usaron.
 
 ### Modelo de seguridad
 
