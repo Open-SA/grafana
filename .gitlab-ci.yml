@@ -57,6 +57,21 @@ sonarqube-check:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
+psalm-taint:
+  stage: lint
+  image: php:8.2-cli
+  tags:
+    - opensa
+    - docker
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - apt-get update && apt-get install -y git unzip
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    - composer install --no-interaction
+    - ./vendor/bin/psalm --taint-analysis
+
 build_job:
   stage: build
   image: composer:latest

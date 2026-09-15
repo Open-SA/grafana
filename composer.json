@@ -12,7 +12,8 @@
         "glpi-project/tools": "^0.8",
         "squizlabs/php_codesniffer": "^4.0.2",
         "phpstan/phpstan": "^2.0",
-        "glpi-project/phpstan-glpi": "^1.0"
+        "glpi-project/phpstan-glpi": "^1.0",
+        "vimeo/psalm": "^5.26"
     },
     "config": {
         "optimize-autoloader": true,
