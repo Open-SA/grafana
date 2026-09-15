@@ -142,7 +142,16 @@ class Dashboard extends CommonDBTM
         if ($requestedUuid !== null && in_array((int) $requestedUuid, $validIds, true)) {
             $currentUuid = (int) $requestedUuid;
         } else {
-            $currentUuid = current($dashboards)['id'];
+            // Fall back to the actor's configured default dashboard, if any,
+            // as long as it's still among the dashboards the user can see.
+            $defaultUuid      = DashboardRight::getDefaultDashboardFor($userId);
+            $defaultDashboard = $defaultUuid !== null
+                ? current(array_filter($dashboards, function ($dashboard) use ($defaultUuid) {
+                    return $dashboard['uid'] === $defaultUuid;
+                }))
+                : false;
+
+            $currentUuid = $defaultDashboard !== false ? $defaultDashboard['id'] : current($dashboards)['id'];
         }
 
         $dropdown = Dropdown::showFromArray(
