@@ -18,11 +18,12 @@ composer_audit:
   rules:
     - if: $CI_COMMIT_TAG
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-    - if: $CI_COMMIT_BRANCH == 'main'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   script:
     - echo "Validando estructura del composer.json..."
     - composer validate --no-check-all
-    - echo "Escaneando vulnerabilidades en librerías"
+    - echo "Escaneando vulnerabilidades en librerías..."
+    - composer audit --locked
 
 phpcs:
   stage: lint
@@ -33,10 +34,43 @@ phpcs:
   rules:
     - if: $CI_COMMIT_TAG
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-    - if: $CI_COMMIT_BRANCH == 'main'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   script:
     - echo "Verificando PSR-12 en todos los archivos PHP, ignorando vendor..."
     - phpcs --standard=PSR12 --extensions=php --ignore=vendor/*,stubs/* --report=full --warning-severity=0 .
+
+sonarqube-check:
+  stage: lint
+  image: sonarsource/sonar-scanner-cli:latest
+  tags:
+    - sonarqube
+  variables:
+    SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"
+    GIT_DEPTH: "0"
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .sonar/cache
+  script:
+    - sonar-scanner -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.token=$SONAR_TOKEN
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+psalm-taint:
+  stage: lint
+  image: php:8.2-cli
+  tags:
+    - opensa
+    - docker
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - apt-get update && apt-get install -y git unzip
+    - curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+    - composer install --no-interaction
+    - ./vendor/bin/psalm --taint-analysis
 
 build_job:
   stage: build
@@ -78,7 +112,7 @@ package_job:
       echo "Moviendo archivos al directorio de destino..."
       for item in $(ls -A); do
         case "$item" in
-          "${DEST_FOLDER}"| ".git"| ".git-hooks"| ".gitlab-ci.yml"| ".github"| "tests"| ".gitignore"| ".php-cs-fixer.php"| "phpstan.neon"| "phpunit.xml")
+          "${DEST_FOLDER}"| ".git"| ".git-hooks"| ".gitlab-ci.yml"| ".github"| "tests"| ".gitignore"| ".php-cs-fixer.php"| "phpstan.neon"| "phpunit.xml"| "sonar-project.properties"| "psalm.xml"| "stubs")
             echo "Ignorando ${item}..."
             continue
             ;;
