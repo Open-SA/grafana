@@ -46,7 +46,7 @@ echo "==> Packaging ${ZIP_NAME}"
     mkdir "${PLUGIN_NAME}"
     for item in $(ls -A); do
         case "${item}" in
-            "${PLUGIN_NAME}"|".git"|".git-hooks"|".gitlab-ci.yml"|".github"|"tests"|".gitignore"|".php-cs-fixer.php"|"phpstan.neon"|"phpunit.xml")
+            "${PLUGIN_NAME}"|".git"|".git-hooks"|".gitlab-ci.yml"|".github"|"tests"|".gitignore"|".php-cs-fixer.php"|"phpstan.neon"|"phpunit.xml"|"sonar-project.properties"|"psalm.xml"|"stubs")
                 ;;
             *)
                 mv "${item}" "${PLUGIN_NAME}/"
