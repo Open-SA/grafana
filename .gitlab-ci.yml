@@ -22,7 +22,8 @@ composer_audit:
   script:
     - echo "Validando estructura del composer.json..."
     - composer validate --no-check-all
-    - echo "Escaneando vulnerabilidades en librerías"
+    - echo "Escaneando vulnerabilidades en librerías..."
+    - composer audit --locked
 
 phpcs:
   stage: lint
