@@ -245,6 +245,16 @@
                     <i class="ti ti-chart-infographic"></i>
                     <span>{{ __('Show reports and dashboards specifications', 'grafana') }}</span>
                 </a>
+
+                <form name="form_rotate_keys" action="{{ form_url }}" method="post"
+                      onsubmit="return confirm('{{ __('Rotating invalidates all unused tokens immediately. Continue?', 'grafana')|e('js') }}');">
+                    <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+
+                    <button type="submit" name="rotate_keys" value="1" class="btn btn-outline-danger">
+                        <i class="ti ti-refresh"></i>
+                        <span>{{ __('Rotate signing keys now', 'grafana') }}</span>
+                    </button>
+                </form>
             </div>
         </div>
 
