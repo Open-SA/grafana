@@ -2,7 +2,7 @@
 
 | ------        | GLPI 11 | GLPI 10 |
 |-------------|----------|----------|
-| **Download**| [1.1.0](https://github.com/Open-SA/grafana/releases/tag/1.1.0)   | [1.0.0](https://github.com/Open-SA/grafana/releases/tag/1.0.0)   |
+| **Download**| [1.1.2](https://github.com/Open-SA/grafana/releases/tag/1.1.2)   | [1.0.2](https://github.com/Open-SA/grafana/releases/tag/1.0.2)   |
 | **Branch** | main    | support/glpi10  |
 | **Status** | Latest  | Supported |
 
@@ -15,7 +15,7 @@ This plugin is a modified version of the [GLPI metabase plugin](https://github.c
 ## Requirements
 
 - GLPI 11.x (for GLPI 10.x support, see the `support/glpi10` branch)
-- PHP 8.1+
+- PHP 8.2+
 - A Grafana instance accessible from the GLPI server
 
 ## Installation
@@ -79,6 +79,17 @@ log_format grafana_safe '$remote_addr - $remote_user [$time_local] '
 
 For Apache, use a `CustomLog` directive with a format string that logs `%U` (URI path without query string) instead of `%r`.
 
+**About the `kid` (key ID):** The plugin derives the `kid` header automatically from a hash of its current public key, so it changes on its own whenever the key pair is regenerated (e.g. after a reinstall). Do not set `key_id` or `key_file` manually in your `grafana.ini` — the plugin relies on `jwk_set_url` to publish its key dynamically, and a static `key_id`/`key_file` would conflict with that and stop working the next time the key rotates.
+
+**JWKS troubleshooting:** If Grafana logs show `failed to verify JWT: EOF` or a similar JWKS-related error, check the following:
+- **The JWKS URL must be reachable directly from Grafana's server**, not just from your browser. Test it from the Grafana host itself:
+  ```bash
+  curl -v https://your-glpi-url/plugins/grafana/front/jwks.php
+  ```
+  It should return `200` with a JSON body like `{"keys": [...]}`. A redirect (`3xx`) or an HTML page instead of JSON usually means something in front of GLPI is blocking the request.
+- **If your GLPI instance uses SSO/SAML**, make sure `front/jwks.php` is explicitly excluded from the forced-login redirect. SSO integrations commonly intercept every unauthenticated request by default; since Grafana's server (not a logged-in browser) is the one requesting this endpoint, it needs to reach it without triggering an SSO login flow.
+- If the URL responds correctly but authentication still fails with a signature error, restart Grafana so it re-fetches the JWKS — it caches the response for a while.
+
 ### Session variables
 
 The plugin can forward GLPI session data to Grafana dashboards as URL variables (`var-*`). This allows Grafana to filter or personalize dashboards based on the logged-in user's context.
@@ -131,7 +142,7 @@ Este plugin es una versión modificada del [plugin de Metabase para GLPI](https:
 ## Requisitos
 
 - GLPI 11.x (para soporte de GLPI 10.x, ver la rama `support/glpi10`)
-- PHP 8.1+
+- PHP 8.2+
 - Una instancia de Grafana accesible desde el servidor de GLPI
 
 ## Instalación
@@ -194,6 +205,17 @@ log_format grafana_safe '$remote_addr - $remote_user [$time_local] '
 ```
 
 Para Apache, usar una directiva `CustomLog` con un formato que registre `%U` (ruta sin query string) en lugar de `%r`.
+
+**Sobre el `kid` (key ID):** El plugin deriva el header `kid` automáticamente a partir de un hash de su clave pública actual, así que cambia solo cada vez que se regenera el par de claves (por ejemplo, después de un reinstall). No configures `key_id` ni `key_file` manualmente en tu `grafana.ini` — el plugin depende de `jwk_set_url` para publicar su clave de forma dinámica, y un `key_id`/`key_file` estático entraría en conflicto con eso y dejaría de funcionar la próxima vez que rote la clave.
+
+**Troubleshooting de JWKS:** Si los logs de Grafana muestran `failed to verify JWT: EOF` o un error similar relacionado al JWKS, revisá lo siguiente:
+- **La URL del JWKS tiene que ser alcanzable directamente desde el servidor de Grafana**, no solo desde tu navegador. Probala desde el propio host de Grafana:
+  ```bash
+  curl -v https://tu-url-de-glpi/plugins/grafana/front/jwks.php
+  ```
+  Debería devolver `200` con un body JSON tipo `{"keys": [...]}`. Un redirect (`3xx`) o una página HTML en vez de JSON usualmente significa que algo delante de GLPI está bloqueando la request.
+- **Si tu instancia de GLPI usa SSO/SAML**, asegurate de excluir explícitamente `front/jwks.php` del redirect de login forzado. Las integraciones de SSO suelen interceptar por defecto cualquier request sin sesión; como quien pide este endpoint es el servidor de Grafana (no un navegador logueado), necesita poder alcanzarlo sin disparar el flujo de login de SSO.
+- Si la URL responde bien pero la autenticación sigue fallando con un error de firma, reiniciá Grafana para que vuelva a pedir el JWKS — lo cachea por un tiempo.
 
 ### Variables de sesión
 
