@@ -2,7 +2,7 @@
    <name>Grafana</name>
    <key>grafana</key>
    <state>stable</state>
-   <logo>https://raw.githubusercontent.com/opensa-sa/grafana/master/log.png</logo>
+   <logo>https://raw.githubusercontent.com/Open-SA/grafana/main/logo.png</logo>
    <description>
       <short>
          <en>This plugin is a modified version of the GLPI metabase plugin that allows you to embed Grafana dashboards directly into GLPI.</en>
@@ -26,19 +26,45 @@ Simplifica la gestión y el análisis de datos, lo que lo convierte en una herra
    <homepage>https://github.com/Open-SA/grafana/</homepage>
    <download>https://github.com/Open-SA/grafana/releases</download>
    <issues>https://github.com/Open-SA/grafana/issues</issues>
-   <readme>https://git.opensa.com.ar/opensa/glpi-plugins/grafana/-/blob/main/README.md</readme>
+   <readme>https://github.com/Open-SA/grafana/blob/main/README.md</readme>
    <authors>
-      <author>Open SA</author>
+      <author>Open-SA</author>
    </authors>
    <versions>
       <version>
+         <num>1.1.2</num>
+         <compatibility>~11.0.0</compatibility>
+         <download_url>https://github.com/Open-SA/grafana/releases/download/1.1.2/grafana-1.1.2.zip</download_url>
+      </version>
+      <version>
+         <num>1.1.1</num>
+         <compatibility>~11.0.0</compatibility>
+         <download_url>https://github.com/Open-SA/grafana/releases/download/1.1.1/grafana-1.1.1.zip</download_url>
+      </version>
+      <version>
+         <num>1.1.0</num>
+         <compatibility>~11.0.0</compatibility>
+         <download_url>https://github.com/Open-SA/grafana/releases/download/1.1.0/glpi-grafana-1.1.0.tar.bz2</download_url>
+      </version>
+      <version>
+         <num>1.0.2</num>
+         <compatibility>~10.0.0</compatibility>
+         <download_url>https://github.com/Open-SA/grafana/releases/download/1.0.2/grafana-1.0.2.zip</download_url>
+      </version>
+      <version>
+         <num>1.0.1</num>
+         <compatibility>~10.0.0</compatibility>
+         <download_url>https://github.com/Open-SA/grafana/releases/download/1.0.1/grafana-1.0.1.zip</download_url>
+      </version>
+      <version>
          <num>1.0.0</num>
-         <compatibility>~10.0.18</compatibility>
-         <download_url>https://github.com/Open-SA/grafana/releases/download/1.0.0/glpi-grafana-1.0.0.tar.bz2</download_url>
+         <compatibility>~10.0.0</compatibility>
+         <download_url>https://github.com/Open-SA/grafana/releases/download/1.0.0/grafana-1.0.0.tar.bz2</download_url>
       </version>
    </versions>
    <langs>
       <lang>en_US</lang>
+      <lang>en_GB</lang>
       <lang>es_AR</lang>
   </langs>
    <license>GPLv2</license>
@@ -61,6 +87,9 @@ Simplifica la gestión y el análisis de datos, lo que lo convierte en una herra
       </es>
    </tags>
    <screenshots>
-      <screenshot>https://raw.githubusercontent.com/Open-SA/grafana/master/screenshot.png</screenshot>
+      <screenshot>https://raw.githubusercontent.com/Open-SA/grafana/main/docs/screenshots/configPageEn.png</screenshot>
+      <screenshot>https://raw.githubusercontent.com/Open-SA/grafana/main/docs/screenshots/permissionsPageEn.png</screenshot>
+      <screenshot>https://raw.githubusercontent.com/Open-SA/grafana/main/docs/screenshots/sessionVarsEn.png</screenshot>
+      <screenshot>https://raw.githubusercontent.com/Open-SA/grafana/main/screenshot.png</screenshot>
    </screenshots>
 </root>
