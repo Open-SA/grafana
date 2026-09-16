@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<psalm
+    errorLevel="4"
+    resolveFromConfigFile="true"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+>
+    <!-- Si el plugin agrega otras carpetas, sumalas acá como
+         <directory name="..." /> — a diferencia de phpstan.neon,
+         Psalm tira error si le apuntás a una carpeta que no existe todavía. -->
+    <projectFiles>
+        <directory name="ajax" />
+        <directory name="front" />
+        <directory name="src" />
+        <directory name="tools" />
+        <file name="hook.php" />
+        <file name="setup.php" />
+        <ignoreFiles>
+            <directory name="vendor" />
+            <directory name="tests" />
+            <directory name="stubs" />
+        </ignoreFiles>
+    </projectFiles>
+
+    <stubs>
+        <file name="stubs/db_config_classes.php" />
+        <file name="stubs/glpi_constants.php" />
+        <file name="stubs/plugins_migrations_classes.php" />
+    </stubs>
+
+    <issueHandlers>
+        <UndefinedClass errorLevel="suppress" />
+        <UndefinedDocblockClass errorLevel="suppress" />
+    </issueHandlers>
+</psalm>

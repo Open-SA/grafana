@@ -42,7 +42,7 @@ use Glpi\Http\SessionManager;
 
 require_once __DIR__ . '/src/Config.php';
 
-define('PLUGIN_GRAFANA_VERSION', '1.1.2');
+define('PLUGIN_GRAFANA_VERSION', '1.1.3');
 
 // Minimal GLPI version, inclusive
 define('PLUGIN_GRAFANA_MIN_GLPI', '10.0.0');
@@ -70,6 +70,8 @@ function plugin_init_grafana()
     SessionManager::registerPluginStatelessPath('grafana', '#^/front/jwks\.php$#');
 
     $PLUGIN_HOOKS['csrf_compliant']['grafana'] = true;
+    $PLUGIN_HOOKS['secured_configs']['grafana'] = ['password', 'private_key'];
+
     // don't load hooks if plugin not enabled (or glpi not logged)
     if (!Plugin::isPluginActive('grafana') || !Session::getLoginUserID()) {
         return;
@@ -89,9 +91,6 @@ function plugin_init_grafana()
 
     // add dashboards
     Plugin::registerClass(Dashboard::class, ['addtabon' => 'Central']);
-
-    // Encryption
-    $PLUGIN_HOOKS['secured_configs']['grafana'] = ['password'];
 
     // Default central tab — applied once per login session
     $PLUGIN_HOOKS['post_init']['grafana'] = 'plugin_grafana_post_init';

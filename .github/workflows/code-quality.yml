@@ -1,0 +1,54 @@
+name: "Code quality"
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  phpcs:
+    name: "PHPCS (PSR-12)"
+    runs-on: ubuntu-latest
+    container: jakzal/phpqa:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run PHPCS
+        run: phpcs --standard=PSR12 --extensions=php --ignore=vendor/*,stubs/* --report=full --warning-severity=0 .
+
+  phpstan:
+    name: "PHPStan"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan analyse
+
+  psalm:
+    name: "Psalm (taint analysis)"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Run Psalm
+        run: ./vendor/bin/psalm --taint-analysis

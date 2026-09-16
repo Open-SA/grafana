@@ -43,7 +43,7 @@
         {{ __('Grafana plugin: RSA keys not found. Please reinstall the plugin.', 'grafana') }}
     </div>
 {% else %}
-    <iframe src="{{ iframe_src }}" id="grafana_iframe" allowtransparency></iframe>
+    <iframe src="{{ iframe_src }}" id="grafana_iframe" allowtransparency referrerpolicy="no-referrer"></iframe>
 
     <script>
     (function () {

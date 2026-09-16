@@ -38,6 +38,7 @@ use GlpiPlugin\Grafana\Config as GrafanaConfig;
 use Session;
 use Config;
 use GlpiPlugin\Grafana\APIClient;
+use GlpiPlugin\Grafana\Token;
 
 include('../../../inc/includes.php');
 Session::checkRight("config", UPDATE);
@@ -47,63 +48,82 @@ require_once __DIR__ . '/../src/Config.php';
 if (isset($_REQUEST["empty_button"])) {
     Session::addMessageAfterRedirect("Success", false, INFO);
     Html::back();
-} else {
-    // This is basically the same block of code in /front/config.form.php with an API call to update the dark/light mode
-    global $CFG_GLPI;
-    $config = new Config();
-    $_POST['id'] = Config::getConfigIDForContext('core');
-    if (!empty($_POST["update_auth"])) {
-        $config->update($_POST);
-        Html::back();
+} elseif (!empty($_POST["update_url_params"])) {
+    $input = [];
+    foreach (array_keys(GrafanaConfig::getUrlParamsPool()) as $key) {
+        $input['url_param_' . $key] = ($_POST['url_param_' . $key] ?? '0') === '1' ? 1 : 0;
     }
-    if (!empty($_POST["update_url_params"])) {
-        $_POST['config_context'] = 'plugin:grafana';
-        $config->update($_POST);
-        Html::back();
-    }
-
-    if (!empty($_POST["update"])) {
-        $_POST['config_context'] = 'plugin:grafana';
-
-        if ($CFG_GLPI['version'] < '11.0.0') {
-            $glpikey = new GLPIKey();
-            foreach (array_keys($_POST) as $field) {
-                if ($glpikey->isConfigSecured('plugin:grafana', $field)) {
-                    // Field must not be altered, it will be encrypted and never displayed, so sanitize is not necessary.
-                    $_POST[$field] = $_UPOST[$field];
-                }
-            }
-        }
-
-        $config->update($_POST);
-
-        $mode = $_POST['lightmode'] == "on" ? "light" : "dark";
-
-        $apiclient = new APIClient();
-        $themeResult = $apiclient->httpQuery(
-            'user/preferences',
-            [
-                'json' => [
-                    'theme' => $mode
-                ]
-            ],
-            'PUT'
+    Config::setConfigurationValues('plugin:grafana', $input);
+    Html::back();
+} elseif (!empty($_POST["rotate_keys"])) {
+    $key_pair = Token::generateKeyPair();
+    if ($key_pair === false) {
+        Session::addMessageAfterRedirect(
+            __('Could not generate a new RSA key pair.', 'grafana'),
+            false,
+            ERROR
         );
-
-        if ($themeResult === false) {
-            $err = $apiclient->getLastError();
-            $errMsg = $err['exception'] ?? __('Unknown error', 'grafana');
-            Session::addMessageAfterRedirect(
-                sprintf(__('Configuration saved, but Grafana theme sync failed: %s', 'grafana'), $errMsg),
-                false,
-                WARNING
-            );
-        }
-
-        Html::displayMessageAfterRedirect(__('Configuration saved successfully'), true);
-        Html::redirect(Toolbox::getItemTypeFormURL('Config'));
+        Html::back();
     }
 
+    Config::setConfigurationValues('plugin:grafana', [
+        'private_key' => $key_pair['private_key'],
+        'public_key'  => $key_pair['public_key'],
+    ]);
+
+    Session::addMessageAfterRedirect(
+        __('Grafana signing keys rotated successfully.', 'grafana'),
+        false,
+        INFO
+    );
+    Html::back();
+} elseif (!empty($_POST["update"])) {
+    $input = [
+        'lightmode'      => (int) ($_POST['lightmode'] ?? 0),
+        'token_lifetime' => max(3, (int) ($_POST['token_lifetime'] ?? 10)),
+    ];
+    foreach (['url', 'username'] as $field) {
+        if (isset($_POST[$field])) {
+            $input[$field] = $_POST[$field];
+        }
+    }
+    if (!empty($_POST['password'])) {
+        $input['password'] = $_POST['password'];
+    }
+
+    if (!empty($input['url']) && !Toolbox::isValidWebUrl($input['url'])) {
+        Session::addMessageAfterRedirect(
+            __('Invalid Grafana URL: must be a valid http or https URL.', 'grafana'),
+            false,
+            ERROR
+        );
+        $url = Toolbox::getItemTypeFormURL('Config') . "?forcetab=" . urlencode(GrafanaConfig::class . '$1');
+        Html::redirect($url);
+    }
+
+    Config::setConfigurationValues('plugin:grafana', $input);
+
+    $mode = ($input['lightmode'] ?? 0) ? 'light' : 'dark';
+    $apiclient = new APIClient();
+    $themeResult = $apiclient->httpQuery(
+        'user/preferences',
+        ['json' => ['theme' => $mode]],
+        'PUT'
+    );
+
+    if ($themeResult === false) {
+        $err = $apiclient->getLastError();
+        $errMsg = $err['exception'] ?? __('Unknown error', 'grafana');
+        Session::addMessageAfterRedirect(
+            sprintf(__('Configuration saved, but Grafana theme sync failed: %s', 'grafana'), $errMsg),
+            false,
+            WARNING
+        );
+    }
+
+    Html::displayMessageAfterRedirect(__('Configuration saved successfully'), true);
+    Html::redirect(Toolbox::getItemTypeFormURL('Config'));
+} else {
     $url = Toolbox::getItemTypeFormURL('Config') . "?forcetab=" . urlencode(GrafanaConfig::class . '$1');
     Html::displayMessageAfterRedirect(__('Theres been some kind of error'), false, ERROR);
     Html::redirect($url);

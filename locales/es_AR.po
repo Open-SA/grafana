@@ -19,6 +19,14 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;\n"
 
+#: front/config.form.php:73 src/Config.php:181
+msgid "Invalid Grafana URL: must be a valid http or https URL."
+msgstr "URL de Grafana inválida: debe ser una URL http o https válida."
+
+#: src/Dashboard.php
+msgid "Invalid Grafana URL configured: must use http or https."
+msgstr "URL de Grafana inválida: debe usar http o https."
+
 #: front/config.form.php:95
 msgid "Unknown error"
 msgstr "Error desconocido"
@@ -36,19 +44,31 @@ msgstr "Configuración guardada correctamente"
 msgid "Theres been some kind of error"
 msgstr "Ocurrió un error"
 
+#: front/config.form.php
+msgid "Could not generate a new RSA key pair."
+msgstr "No se pudo generar un nuevo par de claves RSA."
+
+#: front/config.form.php
+msgid "Grafana signing keys rotated successfully."
+msgstr "Las claves de firma de Grafana se rotaron correctamente."
+
+#: templates/config.html.twig
+msgid "Rotate signing keys now"
+msgstr "Rotar las claves de firma ahora"
+
+#: templates/config.html.twig
+msgid "Rotating invalidates all unused tokens immediately. Continue?"
+msgstr "Rotar invalida inmediatamente todos los tokens no utilizados. ¿Continuar?"
+
 #: front/dashboards.php:38
 msgid "Grafana collections"
 msgstr "Colecciones de Grafana"
-
-#: front/profileright.form.php:52 front/profileright.form.php:80
-msgid "Invalid request."
-msgstr "Solicitud inválida."
 
 #: front/rights.php:82
 msgid "Grafana dashboard permissions"
 msgstr "Permisos de tableros de Grafana"
 
-#: front/selfservice.php:42 src/Config.php:51 src/Profileright.php:61
+#: front/selfservice.php:42 src/Config.php:51
 msgid "Grafana"
 msgstr "Grafana"
 
@@ -140,17 +160,42 @@ msgstr "Configuración del plugin de Grafana"
 msgid "Manage dashboard permissions"
 msgstr "Gestionar permisos de tableros"
 
+#: templates/config.html.twig:33
+msgid "Security model — important"
+msgstr "Modelo de seguridad — importante"
+
+#: templates/config.html.twig:38
+msgid ""
+"The per-dashboard permission grants configured in this plugin control which "
+"dashboards are displayed inside GLPI. They are a display filter only: the "
+"actual security boundary in Grafana is the permission set of the dedicated "
+"Grafana user configured below. Any GLPI user who can view at least one "
+"dashboard will authenticate to Grafana as that shared user and could reach "
+"any dashboard, folder, or data source that user has access to. Ensure the "
+"configured Grafana user has access only to the dashboards intended for GLPI "
+"users."
+msgstr ""
+"Los permisos por tablero configurados en este plugin controlan qué tableros "
+"se muestran dentro de GLPI. Son únicamente un filtro de visualización: el "
+"límite de seguridad real en Grafana es el conjunto de permisos del usuario "
+"dedicado de Grafana configurado a continuación. Cualquier usuario de GLPI "
+"que pueda ver al menos un tablero se autenticará en Grafana como ese usuario "
+"dedicado compartido y podría acceder a cualquier tablero, carpeta o fuente "
+"de datos a los que ese usuario tenga acceso. Asegurarse de que el usuario "
+"dedicado de Grafana configurado tenga acceso solo a los tableros destinados "
+"a los usuarios de GLPI."
+
 #: templates/config.html.twig:35
 msgid "Grafana URL"
 msgstr "URL de Grafana"
 
-#: templates/config.html.twig:48
-msgid "Grafana Username"
-msgstr "Nombre de usuario de Grafana"
+#: templates/config.html.twig:94
+msgid "Dedicated Grafana user"
+msgstr "Usuario dedicado de Grafana"
 
-#: templates/config.html.twig:60
-msgid "Grafana Password"
-msgstr "Contraseña de Grafana"
+#: templates/config.html.twig:106
+msgid "Dedicated Grafana user password"
+msgstr "Contraseña del usuario dedicado de Grafana"
 
 #: templates/config.html.twig:68
 msgid "Show/hide password"
@@ -171,6 +216,18 @@ msgstr "¡Copiado!"
 #: templates/config.html.twig:98
 msgid "Grafana light mode theme"
 msgstr "Tema claro de Grafana"
+
+#: templates/config.html.twig:152
+msgid "JWT token lifetime (minutes)"
+msgstr "Duración del token JWT (minutos)"
+
+#: templates/config.html.twig:160
+msgid ""
+"Minimum 3 minutes. Shorter values reduce the exposure window if a token is "
+"leaked, but increase refresh frequency."
+msgstr ""
+"Mínimo 3 minutos. Valores más cortos reducen la ventana de exposición si un "
+"token es interceptado, pero aumentan la frecuencia de renovación."
 
 #: templates/config.html.twig:119
 msgid "GLPI context variables for Grafana"
@@ -232,18 +289,6 @@ msgstr "Especificaciones de reportes y tableros"
 msgid "Unable to access dashboards data. Please check plugin configuration."
 msgstr "No fue posible acceder a los datos de los tableros. Revisar la configuración del plugin."
 
-#: templates/profileright.html.twig:31
-msgid "Rights management"
-msgstr "Gestión de permisos"
-
-#: templates/profileright.html.twig:40
-msgid "Allow access to all"
-msgstr "Permitir acceso a todos"
-
-#: templates/profileright.html.twig:46
-msgid "Disallow access to all"
-msgstr "Deshabilitar el acceso a todos"
-
 #: templates/rights.html.twig:22
 msgid "Dashboard permissions"
 msgstr "Permisos de tablero"
@@ -275,6 +320,28 @@ msgid ""
 msgstr ""
 "Los usuarios que coincidan con alguno de los actores a continuación verán "
 "la pestaña de Grafana como pestaña de inicio predeterminada al iniciar sesión."
+
+#: templates/rights.html.twig
+msgid "Default dashboard"
+msgstr "Tablero predeterminado"
+
+#: templates/rights.html.twig
+msgid ""
+"Users that match an actor below will see the selected dashboard "
+"preselected when they open the Grafana tab, instead of the first one in "
+"the list."
+msgstr ""
+"Los usuarios que coincidan con un actor a continuación verán el tablero "
+"seleccionado ya elegido al abrir la pestaña de Grafana, en vez del primero "
+"de la lista."
+
+#: templates/rights.html.twig
+msgid "Dashboard"
+msgstr "Tablero"
+
+#: templates/rights.html.twig
+msgid "No actors configured — no default dashboard is set for any user."
+msgstr "Sin actores configurados — no hay tablero predeterminado para ningún usuario."
 
 #: templates/rights.html.twig:70 templates/rights.html.twig:108
 #: templates/rights.html.twig:162 templates/rights.html.twig:201

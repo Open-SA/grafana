@@ -44,43 +44,17 @@ if (!DashboardRight::canUserViewDashboards((int) Session::getLoginUserID())) {
 
 header('Content-Type: application/json');
 
-use Lcobucci\JWT\Configuration;
-
-use Lcobucci\JWT\Signer\Key\InMemory;
-use Lcobucci\JWT\Signer\Rsa\Sha256;
 use GlpiPlugin\Grafana\Config;
+use GlpiPlugin\Grafana\Token;
 
 $config = Config::getConfig();
 
-$private_key_path = GLPI_PLUGIN_DOC_DIR . '/grafana/keys/private_key.pem';
-$public_key_path  = GLPI_PLUGIN_DOC_DIR . '/grafana/keys/public_key.pem';
-
-if (!file_exists($private_key_path) || !file_exists($public_key_path)) {
+if (empty($config['private_key']) || empty($config['public_key'])) {
     header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
     echo json_encode(['error' => 'RSA keys not found. Please reinstall the plugin.']);
     return;
 }
 
-$private_key = file_get_contents($private_key_path);
-$public_key  = file_get_contents($public_key_path);
-
-
-$signer_config = Configuration::forAsymmetricSigner(
-    new Sha256(),
-    InMemory::plainText($private_key),
-    InMemory::plainText($public_key),
-);
-
-
-// Create the token
-$now = new DateTimeImmutable();
-$token = $signer_config->builder()
-    ->issuedBy("glpi_plugin") // Configures the issuer (iss claim)
-    ->expiresAt($now->modify('+1 hour')) // Expires after an hour
-    ->relatedTo($config['username']) // Sub claim with the username of the user in the config
-    ->withHeader('kid', 'grafana-key-1') // Kinda selects the public key to use Grafana side
-    ->getToken($signer_config->signer(), $signer_config->signingKey()); // Retrieves the generated token
-
 echo json_encode([
-    'token' => $token->toString(),
+    'token' => Token::mint($config),
 ]);

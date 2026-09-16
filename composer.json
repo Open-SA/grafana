@@ -5,13 +5,15 @@
     "license": "GPL-2.0-or-later",
     "require": {
         "php": ">=8.2",
+        "guzzlehttp/guzzle": "^7.0",
         "lcobucci/jwt": "^5.4"
     },
     "require-dev": {
         "glpi-project/tools": "^0.8",
-        "squizlabs/php_codesniffer": "^4.0",
+        "squizlabs/php_codesniffer": "^4.0.2",
         "phpstan/phpstan": "^2.0",
-        "glpi-project/phpstan-glpi": "^1.0"
+        "glpi-project/phpstan-glpi": "^1.0",
+        "vimeo/psalm": "^5.26"
     },
     "config": {
         "optimize-autoloader": true,
@@ -29,15 +31,10 @@
         }
     },
     "scripts": {
-        "post-install-cmd": [
+        "setup-dev": [
             "git config core.hooksPath .git-hooks",
             "chmod +x .git-hooks/pre-commit",
-            "echo 'Git hooks configured \\n';"
-        ],
-        "post-update-cmd": [
-            "git config core.hooksPath .git-hooks",
-            "chmod +x .git-hooks/pre-commit",
-            "echo 'Git hooks configured \\n';"
+            "echo 'Git hooks configured';"
         ]
     }
 }
