@@ -2,7 +2,7 @@
 
 | ------        | GLPI 11 | GLPI 10 |
 |-------------|----------|----------|
-| **Download**| [1.1.2](https://github.com/Open-SA/grafana/releases/tag/1.1.2)   | [1.0.2](https://github.com/Open-SA/grafana/releases/tag/1.0.2)   |
+| **Download**| [1.1.3](https://github.com/Open-SA/grafana/releases/tag/1.1.3)   | [1.0.3](https://github.com/Open-SA/grafana/releases/tag/1.0.3)   |
 | **Branch** | main    | support/glpi10  |
 | **Status** | Latest  | Supported |
 
