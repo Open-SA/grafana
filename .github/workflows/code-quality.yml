@@ -17,23 +17,12 @@ jobs:
       - name: Run PHPCS
         run: phpcs --standard=PSR12 --extensions=php --ignore=vendor/*,stubs/* --report=full --warning-severity=0 .
 
-  phpstan:
-    name: "PHPStan"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: "8.2"
-
-      - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress
-
-      - name: Run PHPStan
-        run: ./vendor/bin/phpstan analyse
+  # PHPStan is intentionally not run here: the glpi-project/phpstan-glpi
+  # extension refuses to run outside a real, nested GLPI installation
+  # ("phpstan-glpi rules are not expected to be executed outside the GLPI
+  # context"), which a bare repo checkout can never provide. It still runs
+  # locally via the pre-commit hook, where the plugin is developed inside
+  # an actual GLPI instance.
 
   psalm:
     name: "Psalm (taint analysis)"
