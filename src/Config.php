@@ -79,7 +79,7 @@ class Config extends CommonDBTM
     public static function displayTabContentForItem(
         CommonGLPI $item,
         $tabnum = 1,
-        $withtemplate = 0
+        $withtemplate = 0,
     ) {
         switch (get_class($item)) {
             case GlpiConfig::class:
@@ -170,7 +170,7 @@ class Config extends CommonDBTM
             \Session::addMessageAfterRedirect(
                 __('Invalid Grafana URL: must be a valid http or https URL.', 'grafana'),
                 false,
-                ERROR
+                ERROR,
             );
             unset($input['url']);
         }
@@ -264,7 +264,7 @@ class Config extends CommonDBTM
         $json = preg_replace(
             "/(^|\G) {4}/m",
             "   ",
-            json_encode($dashboard, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
+            json_encode($dashboard, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
         ) ?: '';
 
         TemplateRenderer::getInstance()->display('@grafana/dashboard_json.html.twig', [

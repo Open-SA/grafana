@@ -449,7 +449,7 @@ class DashboardRight extends CommonDBTM
             return (bool) $DB->update(
                 self::getDefaultDashboardTable(),
                 ['dashboard_uuid' => $dashboardUuid],
-                ['id' => $row['id']]
+                ['id' => $row['id']],
             );
         }
 

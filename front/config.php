@@ -33,5 +33,5 @@ include('../../../inc/includes.php');
 Session::checkRight('config', READ);
 
 Html::redirect(
-    Toolbox::getItemTypeFormURL('Config') . '?forcetab=' . urlencode('GlpiPlugin\Grafana\Config$1')
+    Toolbox::getItemTypeFormURL('Config') . '?forcetab=' . urlencode('GlpiPlugin\Grafana\Config$1'),
 );

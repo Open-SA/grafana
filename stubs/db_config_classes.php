@@ -36,13 +36,9 @@
 // It permits to indicates to PHPStan and IDEs that the `DB` and the `DBSlave` classes are extending the `DBmysql` class.
 
 if (!class_exists('DB', false)) {
-    class DB extends DBmysql
-    {
-    }
+    class DB extends DBmysql {}
 }
 
 if (!class_exists('DBSlave', false)) {
-    class DBSlave extends DBmysql
-    {
-    }
+    class DBSlave extends DBmysql {}
 }

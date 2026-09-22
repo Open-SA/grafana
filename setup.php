@@ -118,7 +118,7 @@ function plugin_version_grafana()
             ],
             'php' => [
                 'min' => '8.2.0',
-            ]
+            ],
         ],
     ];
 }

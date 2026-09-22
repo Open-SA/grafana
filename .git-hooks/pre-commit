@@ -62,5 +62,19 @@ fi
 
 echo "PHPStan passed correctly! :)"
 echo "\n==================================================\n"
+echo "Running PHP-CS-Fixer...\n"
+
+./vendor/bin/php-cs-fixer fix --dry-run --diff
+
+FIXER_RESULT=$?
+
+if [ "$FIXER_RESULT" -ne 0 ]; then
+    echo "\nPHP-CS-Fixer found style issues."
+    echo "Run './vendor/bin/php-cs-fixer fix' to fix them automatically, then try committing again.\n"
+    exit 1
+fi
+
+echo "PHP-CS-Fixer passed correctly! :)"
+echo "\n==================================================\n"
 
 exit 0

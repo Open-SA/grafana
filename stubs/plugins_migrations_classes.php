@@ -36,7 +36,5 @@
 // It permits to indicates to PHPStan and IDEs that these classes may exist.
 
 if (!class_exists('PluginGenericobjectType', false)) {
-    class PluginGenericobjectType extends CommonDBTM
-    {
-    }
+    class PluginGenericobjectType extends CommonDBTM {}
 }

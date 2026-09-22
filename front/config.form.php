@@ -61,7 +61,7 @@ if (isset($_REQUEST["empty_button"])) {
         Session::addMessageAfterRedirect(
             __('Could not generate a new RSA key pair.', 'grafana'),
             false,
-            ERROR
+            ERROR,
         );
         Html::back();
     }
@@ -74,7 +74,7 @@ if (isset($_REQUEST["empty_button"])) {
     Session::addMessageAfterRedirect(
         __('Grafana signing keys rotated successfully.', 'grafana'),
         false,
-        INFO
+        INFO,
     );
     Html::back();
 } elseif (!empty($_POST["update"])) {
@@ -95,7 +95,7 @@ if (isset($_REQUEST["empty_button"])) {
         Session::addMessageAfterRedirect(
             __('Invalid Grafana URL: must be a valid http or https URL.', 'grafana'),
             false,
-            ERROR
+            ERROR,
         );
         $url = Toolbox::getItemTypeFormURL('Config') . "?forcetab=" . urlencode(GrafanaConfig::class . '$1');
         Html::redirect($url);
@@ -108,7 +108,7 @@ if (isset($_REQUEST["empty_button"])) {
     $themeResult = $apiclient->httpQuery(
         'user/preferences',
         ['json' => ['theme' => $mode]],
-        'PUT'
+        'PUT',
     );
 
     if ($themeResult === false) {
@@ -117,7 +117,7 @@ if (isset($_REQUEST["empty_button"])) {
         Session::addMessageAfterRedirect(
             sprintf(__('Configuration saved, but Grafana theme sync failed: %s', 'grafana'), $errMsg),
             false,
-            WARNING
+            WARNING,
         );
     }
 
