@@ -12,7 +12,7 @@ jobs:
     container: jakzal/phpqa:latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Run PHPCS
         run: phpcs --standard=PSR12 --extensions=php --ignore=vendor/*,stubs/* --report=full --warning-severity=0 .
@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
