@@ -6,7 +6,7 @@
     "require": {
         "php": ">=8.2",
         "guzzlehttp/guzzle": "^7.0",
-        "lcobucci/jwt": "^5.4"
+        "lcobucci/jwt": "^5.6"
     },
     "require-dev": {
         "glpi-project/tools": "^0.8",
